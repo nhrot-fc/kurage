@@ -1,44 +1,218 @@
+/**
+ * kurage_engine.h
+ *
+ * Core entity-component-system (ECS) architecture for the Kurage Physics
+ * Engine. Implements a simplified data-oriented design for basic particle
+ * physics simulation.
+ *
+ * Author: nhrot-fc
+ */
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "../config/config.h"
+#include "kurage_math.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+#define DELTA_TIME 0.0001
+#define GRAVITY 9.81
+
+/*-----------------------------------------------------------------------------
+ * ECS Types and Definitions
+ *----------------------------------------------------------------------------*/
+
+#define KURAGE_MAX_ENTITIES MAX_OBJECTS
+typedef uint32_t EntityID;
+#define INVALID_ENTITY UINT32_MAX
+
+/**
+ * Component type masks for identifying what components an entity has
+ */
+typedef enum {
+  COMPONENT_NONE = 0,
+  COMPONENT_PARTICLE =
+      1 << 0, /**< Entity has particle properties (position and mass) */
+  COMPONENT_MECHANICS =
+      1 << 1, /**< Entity has mechanics properties (velocity and forces) */
+} ComponentMask;
+
+/**
+ * Component for storing basic particle properties
+ * Contains position and mass information
+ */
 typedef struct {
-  float x;
-  float y;
-} Vector2;
+  KVector2 position;  /**< Current position */
+  KVector2 previous;  /**< Previous position (for verlet integration) */
+  double inverseMass; /**< Inverse of mass for efficient calculations */
+} ParticleComponent;
 
+/**
+ * Component for storing mechanics properties
+ * Contains velocity, acceleration and force accumulator
+ */
 typedef struct {
-  Vector2 position;
-} PositionComponent;
+  KVector2 velocity;     /**< Current velocity */
+  KVector2 acceleration; /**< Current acceleration */
+  KVector2 forceAccum;   /**< Accumulated forces to be applied */
+} MechanicsComponent;
 
+/**
+ * Universe structure that contains all entities and components
+ * This is the main container for the physics simulation
+ */
 typedef struct {
-  Vector2 velocity;
-  Vector2 force_accumulator;
-  float mass;
-} PhysicsComponent;
+  /** Entity management */
+  uint32_t entityCount;       /**< Current number of active entities */
+  uint32_t maxEntities;       /**< Maximum number of entities supported */
+  ComponentMask *entityMasks; /**< Bit masks of components for each entity */
+  bool *activeEntities;       /**< Whether each entity slot is active */
 
-typedef struct {
-  float density;
-  float pressure;
-} FluidParticleComponent;
-
-typedef struct {
-  int entity_count;
-  int capacity;
-
-  unsigned int *entity_masks;
-  PositionComponent *positions;
-  PhysicsComponent *physics;
-  FluidParticleComponent *fluid_particles;
-
+  /** Component storage - contiguous arrays for cache efficiency */
+  ParticleComponent *particles;
+  MechanicsComponent *mechanics;
 } Universe;
 
-Universe *create_world(int capacity);
-void destroy_world(Universe *world);
-int create_particle(Universe *world, Vector2 pos, float mass);
+/*-----------------------------------------------------------------------------
+ * Universe Management Functions
+ *----------------------------------------------------------------------------*/
 
-void Gravity_update(Universe *world);
-void Fluid_update(Universe *world);
-void Movement_update(Universe *world, float dt);
-void ForceCleanup_update(Universe *world);
+/**
+ * Creates and initializes a new universe
+ *
+ * @param maxEntities Maximum number of entities this universe can contain
+ * @return Initialized universe instance
+ */
+Universe *UniverseCreate(uint32_t maxEntities);
+
+/**
+ * Destroys a universe and frees all associated resources
+ *
+ * @param universe Universe to destroy
+ */
+void UniverseDestroy(Universe *universe);
+
+/**
+ * Updates the universe state by the specified time step
+ *
+ * @param universe Universe to update
+ * @param deltaTime Time step in seconds
+ */
+void UniverseUpdate(Universe *universe, double deltaTime);
+
+/*-----------------------------------------------------------------------------
+ * Entity Management Functions
+ *----------------------------------------------------------------------------*/
+
+/**
+ * Creates a new entity in the universe
+ *
+ * @param universe Universe to create the entity in
+ * @return ID of the created entity, or INVALID_ENTITY if creation failed
+ */
+EntityID UniverseCreateEntity(Universe *universe);
+
+/**
+ * Destroys an entity and removes all its components
+ *
+ * @param universe Universe containing the entity
+ * @param entity ID of the entity to destroy
+ * @return true if successful, false if entity didn't exist
+ */
+bool UniverseDestroyEntity(Universe *universe, EntityID entity);
+
+/*-----------------------------------------------------------------------------
+ * Component Management Functions
+ *----------------------------------------------------------------------------*/
+
+/**
+ * Adds a particle component to an entity
+ *
+ * @param universe Universe containing the entity
+ * @param entity Entity to add the component to
+ * @param position Initial position value
+ * @param mass Mass value (use INFINITY for static objects)
+ * @return true if successful, false if failed
+ */
+bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
+                                  KVector2 position, double mass);
+
+/**
+ * Adds a mechanics component to an entity
+ *
+ * @param universe Universe containing the entity
+ * @param entity Entity to add the component to
+ * @param velocity Initial velocity
+ * @param acceleration Initial acceleration
+ * @return true if successful, false if failed
+ */
+bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
+                                   KVector2 velocity, KVector2 acceleration);
+
+/*-----------------------------------------------------------------------------
+ * Component Access Functions
+ *----------------------------------------------------------------------------*/
+
+/**
+ * Gets the particle component of an entity
+ *
+ * @param universe Universe containing the entity
+ * @param entity Entity to get the component from
+ * @return Pointer to the component, or NULL if entity doesn't have it
+ */
+ParticleComponent *UniverseGetParticleComponent(Universe *universe,
+                                                EntityID entity);
+
+/**
+ * Gets the mechanics component of an entity
+ *
+ * @param universe Universe containing the entity
+ * @param entity Entity to get the component from
+ * @return Pointer to the component, or NULL if entity doesn't have it
+ */
+MechanicsComponent *UniverseGetMechanicsComponent(Universe *universe,
+                                                  EntityID entity);
+
+/*-----------------------------------------------------------------------------
+ * Physics System Functions
+ *----------------------------------------------------------------------------*/
+
+/**
+ * Applies a force to an entity
+ *
+ * @param universe Universe containing the entity
+ * @param entity Entity to apply the force to
+ * @param force Force vector to apply
+ * @return true if successful, false if entity can't have forces applied
+ */
+bool PhysicsApplyForce(Universe *universe, EntityID entity, KVector2 force);
+
+/**
+ * Applies gravity to all entities with particle and mechanics components
+ *
+ * @param universe Universe to process
+ * @param gravityVector Gravity force vector
+ */
+void PhysicsApplyGravity(Universe *universe, KVector2 gravityVector);
+
+/**
+ * Integrates forces and updates positions and velocities
+ *
+ * @param universe Universe to update
+ * @param deltaTime Time step in seconds
+ */
+void PhysicsIntegrateForces(Universe *universe, double deltaTime);
+
+/**
+ * Creates a basic particle entity with position, velocity, and mass
+ *
+ * @param universe Universe to create the particle in
+ * @param position Initial position
+ * @param velocity Initial velocity
+ * @param mass Mass of the particle
+ * @return EntityID of the created particle
+ */
+EntityID ParticleCreate(Universe *universe, KVector2 position,
+                        KVector2 velocity, double mass);
 
 #endif // ENGINE_H
