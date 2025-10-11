@@ -297,11 +297,11 @@ KQuaternion KQuaternionUnit(KQuaternion *q) {
 /**
  * Utility Functions Implementation
  */
-double RadiansToDegrees(double radians) { return radians * (180.0 / M_PI); }
+double KRad2Deg(double radians) { return radians * (180.0 / M_PI); }
 
-double DegreesToRadians(double degrees) { return degrees * (M_PI / 180.0); }
+double KDeg2Rad(double degrees) { return degrees * (M_PI / 180.0); }
 
-double Lerp(double a, double b, double t) {
+double KLerp(double a, double b, double t) {
   if (t < 0.0)
     t = 0.0;
   if (t > 1.0)
@@ -310,7 +310,7 @@ double Lerp(double a, double b, double t) {
   return a + t * (b - a);
 }
 
-double Clamp(double value, double min, double max) {
+double KClamp(double value, double min, double max) {
   if (value < min)
     return min;
   if (value > max)

@@ -2,85 +2,54 @@
 # Kurage Project Makefile
 ##############################################
 
-# Directories
-SRC_DIR = src
-LIB_DIR = lib
+# Variables
+CC = gcc
+CFLAGS = -Wall -Wl,-rpath=./lib/raylib/src
+LDFLAGS = -L./lib/raylib/src -lraylib -lm -lpthread -ldl -lrt -lX11
+INCLUDES = -I./lib/raylib/src -Isrc
 BUILD_DIR = build
 BIN_DIR = $(BUILD_DIR)/bin
-OBJ_DIR = $(BUILD_DIR)/obj
 
 # Output files
-ENGINE_LIB = $(BUILD_DIR)/libengine.a
-TARGET = $(BIN_DIR)/kurage
-
-# Compiler and flags
-CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -g
-PLUGIN_CFLAGS = $(CFLAGS) -fPIC
-
-# Raylib
-RAYLIB_DIR = $(LIB_DIR)/raylib
-RAYLIB_SRC = $(RAYLIB_DIR)/src
-RAYLIB_LIB = $(RAYLIB_SRC)/libraylib.a
-
-# Include path, Libraries and linker flags
-INCLUDES = -I$(SRC_DIR) -I$(RAYLIB_SRC)
-LDFLAGS = -L$(BUILD_DIR) -L$(RAYLIB_SRC)
-LDLIBS = -lengine -lraylib -lm -lpthread -ldl -lrt -lX11
+KURAGE_BIN = $(BUILD_DIR)/kurage
+ENGINE_SO = $(BUILD_DIR)/libkurage.so
 
 # Source files
-ENGINE_SRC = $(SRC_DIR)/engine/engine.c
-CONFIG_SRC = 
-MAIN_SRC = $(SRC_DIR)/main.c
+MAIN_SRC = src/main.c
+ENGINE_SRC = src/engine/engine.c src/engine/kurage_math.c
+KURAGE_SRC = src/engine/kurage.c
 
-# Object files
-ENGINE_OBJ = $(OBJ_DIR)/engine.o
-MAIN_OBJ = $(OBJ_DIR)/main.o
+# Raylib
+RAYLIB_LIB = ./lib/raylib/src/libraylib.a
 
-# Default target
-all: dirs compile-engine $(TARGET)
+all: $(BUILD_DIR) $(KURAGE_BIN) $(ENGINE_SO)
 
-# Create necessary directories
-dirs:
-	@mkdir -p $(BUILD_DIR) $(BIN_DIR) $(OBJ_DIR) $(OBJ_DIR)/engine
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BIN_DIR)
 
-compile-engine: dirs
-	@echo "Compiling engine sources..."
-	@mkdir -p $(dir $(ENGINE_OBJ))
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $(ENGINE_SRC) -o $(ENGINE_OBJ)
-	@echo "Building engine library..."
-	@ar rcs $(ENGINE_LIB) $(ENGINE_OBJ)
+# Build main executable
+$(KURAGE_BIN): $(MAIN_SRC) $(RAYLIB_LIB)
+	$(CC) $(CFLAGS) $(INCLUDES) $(MAIN_SRC) -o $(KURAGE_BIN) $(LDFLAGS)
 
-# Setup Raylib
-setup:
-	@echo "Setting up Raylib..."
-	@if [ ! -d "$(RAYLIB_DIR)" ]; then \
-		git clone --depth 1 https://github.com/raysan5/raylib.git $(RAYLIB_DIR); \
-	else \
-		echo "Raylib already exists. Skipping clone."; \
-	fi
-	@cd $(RAYLIB_SRC) && make PLATFORM=PLATFORM_DESKTOP
+# Build hot reloadable engine library
+$(ENGINE_SO): $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
+	$(CC) -shared -fPIC $(CFLAGS) $(INCLUDES) $(ENGINE_SRC) $(KURAGE_SRC) -o $(ENGINE_SO) $(LDFLAGS)
 
-# Compile main.c file
-$(MAIN_OBJ): $(MAIN_SRC)
-	@echo "Compiling main source..."
-	@mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+# Shortcut to rebuild just the shared library for hot reloading
+reload: $(ENGINE_SO)
 
-# Link the final executable
-$(TARGET): $(MAIN_OBJ) $(ENGINE_LIB) $(RAYLIB_LIB)
-	@echo "Building main application..."
-	@mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) -o $@ $(MAIN_OBJ) $(LDFLAGS) $(LDLIBS)
+# Build Raylib if needed
+$(RAYLIB_LIB):
+	@echo "Building Raylib..."
+	@cd ./lib/raylib/src && make PLATFORM=PLATFORM_DESKTOP
 
 # Run the application
 run: all
 	@echo "Running Kurage..."
-	@$(TARGET)
+	@$(KURAGE_BIN)
 
-# Clean build files
 clean:
-	@echo "Cleaning build files..."
-	@rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
-.PHONY: all clean compile-engine run setup dirs
+.PHONY: all clean reload run

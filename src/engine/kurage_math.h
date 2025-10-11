@@ -84,9 +84,9 @@ KQuaternion KQuaternionNormalize(KQuaternion *q);
 /**
  * Utility functions
  */
-double RadiansToDegrees(double radians);
-double DegreesToRadians(double degrees);
-double Lerp(double a, double b, double t);
-double Clamp(double value, double min, double max);
+double KRad2Deg(double radians);
+double KDeg2Rad(double degrees);
+double KLerp(double a, double b, double t);
+double KClamp(double value, double min, double max);
 
 #endif /* KURAGE_MATH_H */
