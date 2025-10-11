@@ -10,16 +10,16 @@
 #include <stddef.h>
 
 /**
- * Vector2 Operations Implementation
+ * KVector2 Operations Implementation
  */
-double Vector2Magnitude(Vector2 *v) {
+double Vector2Magnitude(KVector2 *v) {
   if (v == NULL)
     return 0.0;
   return sqrt(v->x * v->x + v->y * v->y);
 }
 
-Vector2 Vector2Inversion(Vector2 *v) {
-  Vector2 result = {0, 0};
+KVector2 Vector2Inversion(KVector2 *v) {
+  KVector2 result = {0, 0};
   if (v == NULL)
     return result;
 
@@ -29,8 +29,8 @@ Vector2 Vector2Inversion(Vector2 *v) {
   return result;
 }
 
-Vector2 Vector2Normalization(Vector2 *v) {
-  Vector2 result = {0, 0};
+KVector2 Vector2Normalization(KVector2 *v) {
+  KVector2 result = {0, 0};
   if (v == NULL)
     return result;
 
@@ -45,8 +45,8 @@ Vector2 Vector2Normalization(Vector2 *v) {
   return result;
 }
 
-Vector2 Vector2ScalarProduct(double scalar, Vector2 *v) {
-  Vector2 result = {0, 0};
+KVector2 Vector2ScalarProduct(double scalar, KVector2 *v) {
+  KVector2 result = {0, 0};
   if (v == NULL)
     return result;
 
@@ -56,15 +56,15 @@ Vector2 Vector2ScalarProduct(double scalar, Vector2 *v) {
   return result;
 }
 
-double Vector2DotProduct(Vector2 *v1, Vector2 *v2) {
+double Vector2DotProduct(KVector2 *v1, KVector2 *v2) {
   if (v1 == NULL || v2 == NULL)
     return 0.0;
 
   return v1->x * v2->x + v1->y * v2->y;
 }
 
-Vector2 Vector2Addition(Vector2 *v1, Vector2 *v2) {
-  Vector2 result = {0, 0};
+KVector2 Vector2Addition(KVector2 *v1, KVector2 *v2) {
+  KVector2 result = {0, 0};
   if (v1 == NULL || v2 == NULL)
     return result;
 
@@ -74,8 +74,8 @@ Vector2 Vector2Addition(Vector2 *v1, Vector2 *v2) {
   return result;
 }
 
-Vector2 Vector2Subtraction(Vector2 *v1, Vector2 *v2) {
-  Vector2 result = {0, 0};
+KVector2 Vector2Subtraction(KVector2 *v1, KVector2 *v2) {
+  KVector2 result = {0, 0};
   if (v1 == NULL || v2 == NULL)
     return result;
 
@@ -86,17 +86,17 @@ Vector2 Vector2Subtraction(Vector2 *v1, Vector2 *v2) {
 }
 
 /**
- * Vector3 Operations Implementation
+ * KVector3 Operations Implementation
  */
 
-double Vector3Magnitude(Vector3 *v) {
+double Vector3Magnitude(KVector3 *v) {
   if (v == NULL)
     return 0.0;
   return sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
 }
 
-Vector3 Vector3Inversion(Vector3 *v) {
-  Vector3 result = {0, 0, 0};
+KVector3 Vector3Inversion(KVector3 *v) {
+  KVector3 result = {0, 0, 0};
   if (v == NULL)
     return result;
 
@@ -107,8 +107,8 @@ Vector3 Vector3Inversion(Vector3 *v) {
   return result;
 }
 
-Vector3 Vector3Normalization(Vector3 *v) {
-  Vector3 result = {0, 0, 0};
+KVector3 Vector3Normalization(KVector3 *v) {
+  KVector3 result = {0, 0, 0};
   if (v == NULL)
     return result;
 
@@ -124,8 +124,8 @@ Vector3 Vector3Normalization(Vector3 *v) {
   return result;
 }
 
-Vector3 Vector3ScalarProduct(double scalar, Vector3 *v) {
-  Vector3 result = {0, 0, 0};
+KVector3 Vector3ScalarProduct(double scalar, KVector3 *v) {
+  KVector3 result = {0, 0, 0};
   if (v == NULL)
     return result;
 
@@ -136,15 +136,15 @@ Vector3 Vector3ScalarProduct(double scalar, Vector3 *v) {
   return result;
 }
 
-double Vector3DotProduct(Vector3 *v1, Vector3 *v2) {
+double Vector3DotProduct(KVector3 *v1, KVector3 *v2) {
   if (v1 == NULL || v2 == NULL)
     return 0.0;
 
   return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
-Vector3 Vector3CrossProduct(Vector3 *v1, Vector3 *v2) {
-  Vector3 result = {0, 0, 0};
+KVector3 Vector3CrossProduct(KVector3 *v1, KVector3 *v2) {
+  KVector3 result = {0, 0, 0};
   if (v1 == NULL || v2 == NULL)
     return result;
 
@@ -155,8 +155,8 @@ Vector3 Vector3CrossProduct(Vector3 *v1, Vector3 *v2) {
   return result;
 }
 
-Vector3 Vector3Addition(Vector3 *v1, Vector3 *v2) {
-  Vector3 result = {0, 0, 0};
+KVector3 Vector3Addition(KVector3 *v1, KVector3 *v2) {
+  KVector3 result = {0, 0, 0};
   if (v1 == NULL || v2 == NULL)
     return result;
 
@@ -167,8 +167,8 @@ Vector3 Vector3Addition(Vector3 *v1, Vector3 *v2) {
   return result;
 }
 
-Vector3 Vector3Subtraction(Vector3 *v1, Vector3 *v2) {
-  Vector3 result = {0, 0, 0};
+KVector3 Vector3Subtraction(KVector3 *v1, KVector3 *v2) {
+  KVector3 result = {0, 0, 0};
   if (v1 == NULL || v2 == NULL)
     return result;
 
@@ -180,15 +180,15 @@ Vector3 Vector3Subtraction(Vector3 *v1, Vector3 *v2) {
 }
 
 /**
- * Quaternion Operations Implementation
+ * KQuaternion Operations Implementation
  */
 
-Quaternion QuaternionFromAxisAngle(Vector3 *axis, double angle) {
-  Quaternion result = {0, 0, 0, 1}; // Default to identity quaternion
+KQuaternion QuaternionFromAxisAngle(KVector3 *axis, double angle) {
+  KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
   if (axis == NULL)
     return result;
 
-  Vector3 normalized = Vector3Normalization(axis);
+  KVector3 normalized = Vector3Normalization(axis);
   double halfAngle = angle / 2.0;
   double sinHalfAngle = sin(halfAngle);
 
@@ -200,8 +200,8 @@ Quaternion QuaternionFromAxisAngle(Vector3 *axis, double angle) {
   return result;
 }
 
-Quaternion QuaternionMultiply(Quaternion *q1, Quaternion *q2) {
-  Quaternion result = {0, 0, 0, 1}; // Default to identity quaternion
+KQuaternion QuaternionMultiply(KQuaternion *q1, KQuaternion *q2) {
+  KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
   if (q1 == NULL || q2 == NULL)
     return result;
 
@@ -213,7 +213,7 @@ Quaternion QuaternionMultiply(Quaternion *q1, Quaternion *q2) {
   return result;
 }
 
-Matrix3x3 QuaternionToMatrix3(Quaternion *q) {
+Matrix3x3 QuaternionToMatrix3(KQuaternion *q) {
   Matrix3x3 result = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}}; // Identity matrix
   if (q == NULL)
     return result;
@@ -243,7 +243,7 @@ Matrix3x3 QuaternionToMatrix3(Quaternion *q) {
   return result;
 }
 
-Matrix4x4 QuaternionToMatrix4(Quaternion *q) {
+Matrix4x4 QuaternionToMatrix4(KQuaternion *q) {
   // Initialize identity matrix
   Matrix4x4 result = {{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}};
 
@@ -275,8 +275,8 @@ Matrix4x4 QuaternionToMatrix4(Quaternion *q) {
   return result;
 }
 
-Quaternion QuaternionNormalize(Quaternion *q) {
-  Quaternion result = {0, 0, 0, 1}; // Default to identity quaternion
+KQuaternion QuaternionNormalize(KQuaternion *q) {
+  KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
   if (q == NULL)
     return result;
 

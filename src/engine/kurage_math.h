@@ -1,9 +1,7 @@
 /**
  * kurage_math.h
  *
- * A basic mathematics library for the Kurage Physics Engine.
- * This header defines vector structures and operations commonly used
- * in physics simulations and game development.
+ * A basic mathematics library for the Kurage Physic
  *
  */
 
@@ -17,15 +15,15 @@ typedef struct {
   double x;
   double y;
   double z;
-} Vector3;
+} KVector3;
 
 typedef struct {
   double x;
   double y;
-} Vector2;
+} KVector2;
 
 /**
- * Quaternion structure
+ * KQuaternion structure
  * Used for representing rotations in 3D space
  */
 typedef struct {
@@ -33,7 +31,7 @@ typedef struct {
   double y; // Y component
   double z; // Z component
   double w; // Real component
-} Quaternion;
+} KQuaternion;
 
 /**
  * Matrix4x4 structure
@@ -52,36 +50,36 @@ typedef struct {
 } Matrix3x3;
 
 /**
- * Basic Vector2 operations
+ * Basic KVector2 operations
  */
-double Vector2Magnitude(Vector2 *v);
-Vector2 Vector2Inversion(Vector2 *v);
-Vector2 Vector2Normalization(Vector2 *v);
-Vector2 Vector2ScalarProduct(double scalar, Vector2 *v);
-double Vector2DotProduct(Vector2 *v1, Vector2 *v2);
-Vector2 Vector2Addition(Vector2 *v1, Vector2 *v2);
-Vector2 Vector2Subtraction(Vector2 *v1, Vector2 *v2);
+double KVector2Magnitude(KVector2 *v);
+KVector2 KVector2Inversion(KVector2 *v);
+KVector2 KVector2Normalization(KVector2 *v);
+KVector2 KVector2ScalarProduct(double scalar, KVector2 *v);
+double KVector2DotProduct(KVector2 *v1, KVector2 *v2);
+KVector2 KVector2Addition(KVector2 *v1, KVector2 *v2);
+KVector2 KVector2Subtraction(KVector2 *v1, KVector2 *v2);
 
 /**
- * Basic Vector3 operations
+ * Basic KVector3 operations
  */
-double Vector3Magnitude(Vector3 *v);
-Vector3 Vector3Inversion(Vector3 *v);
-Vector3 Vector3Normalization(Vector3 *v);
-Vector3 Vector3ScalarProduct(double scalar, Vector3 *v);
-double Vector3DotProduct(Vector3 *v1, Vector3 *v2);
-Vector3 Vector3CrossProduct(Vector3 *v1, Vector3 *v2);
-Vector3 Vector3Addition(Vector3 *v1, Vector3 *v2);
-Vector3 Vector3Subtraction(Vector3 *v1, Vector3 *v2);
+double Vector3Magnitude(KVector3 *v);
+KVector3 Vector3Inversion(KVector3 *v);
+KVector3 Vector3Normalization(KVector3 *v);
+KVector3 Vector3ScalarProduct(double scalar, KVector3 *v);
+double Vector3DotProduct(KVector3 *v1, KVector3 *v2);
+KVector3 Vector3CrossProduct(KVector3 *v1, KVector3 *v2);
+KVector3 Vector3Addition(KVector3 *v1, KVector3 *v2);
+KVector3 Vector3Subtraction(KVector3 *v1, KVector3 *v2);
 
 /**
- * Basic Quaternion operations
+ * Basic KQuaternion operations
  */
-Quaternion QuaternionFromAxisAngle(Vector3 *axis, double angle);
-Quaternion QuaternionMultiply(Quaternion *q1, Quaternion *q2);
-Matrix3x3 QuaternionToMatrix3(Quaternion *q);
-Matrix4x4 QuaternionToMatrix4(Quaternion *q);
-Quaternion QuaternionNormalize(Quaternion *q);
+KQuaternion QuaternionFromAxisAngle(KVector3 *axis, double angle);
+KQuaternion QuaternionMultiply(KQuaternion *q1, KQuaternion *q2);
+Matrix3x3 QuaternionToMatrix3(KQuaternion *q);
+Matrix4x4 QuaternionToMatrix4(KQuaternion *q);
+KQuaternion QuaternionNormalize(KQuaternion *q);
 
 /**
  * Utility functions
