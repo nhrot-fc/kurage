@@ -5,21 +5,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Forward declarations of function types
-typedef void (*kurage_init_t)(void);
-typedef void *(*kurage_pre_reload_t)(void);
-typedef void (*kurage_post_reload_t)(void *);
-typedef void (*kurage_logic_t)(void);
-typedef void (*kurage_update_t)(void);
-typedef void (*kurage_render_t)(void);
+// Forward declare the KurageState type without including the entire header
+// This avoids redefinition issues
+typedef struct KurageState KurageState;
 
-// Function pointers
-kurage_init_t kurage_init = NULL;
-kurage_pre_reload_t kurage_pre_reload = NULL;
-kurage_post_reload_t kurage_post_reload = NULL;
-kurage_logic_t kurage_logic = NULL;
-kurage_update_t kurage_update = NULL;
-kurage_render_t kurage_render = NULL;
+// Define the function prototypes for hot-reloadable functions
+#define KURAGE_FUNC_LIST                                                       \
+  X(kurage_init, void, void)                                                   \
+  X(kurage_pre_reload, KurageState *, void)                                    \
+  X(kurage_post_reload, void, KurageState *)                                   \
+  X(kurage_logic, void, void)                                                  \
+  X(kurage_update, void, void)                                                 \
+  X(kurage_render, void, void)
+
+// Define function pointer types
+#define X(name, ret, ...) typedef ret (*name##_t)(__VA_ARGS__);
+KURAGE_FUNC_LIST
+#undef X
+
+// Declare function pointers
+#define X(name, ...) name##_t name = NULL;
+KURAGE_FUNC_LIST
+#undef X
 
 const char *engine_lib_name = "build/libkurage.so";
 void *engine_lib = NULL;
@@ -31,55 +38,20 @@ int lib_reload(void) {
   engine_lib = dlopen(engine_lib_name, RTLD_NOW);
 
   if (engine_lib == NULL) {
-    fprintf(stderr, "ERROR: could not load %s: %s\n", engine_lib_name,
-            dlerror());
+    fprintf(stderr, "ERROR: could not load %s: %s\n", engine_lib_name, dlerror());
     return -1;
   }
 
-  // Load all the function pointers
-  kurage_init = dlsym(engine_lib, "kurage_init");
-  if (kurage_init == NULL) {
-    fprintf(stderr, "ERROR: could not find kurage_init symbol in %s: %s\n",
-            engine_lib_name, dlerror());
-    return -1;
-  }
-
-  kurage_pre_reload = dlsym(engine_lib, "kurage_pre_reload");
-  if (kurage_pre_reload == NULL) {
-    fprintf(stderr,
-            "ERROR: could not find kurage_pre_reload symbol in %s: %s\n",
-            engine_lib_name, dlerror());
-    return -1;
-  }
-
-  kurage_post_reload = dlsym(engine_lib, "kurage_post_reload");
-  if (kurage_post_reload == NULL) {
-    fprintf(stderr,
-            "ERROR: could not find kurage_post_reload symbol in %s: %s\n",
-            engine_lib_name, dlerror());
-    return -1;
-  }
-
-  kurage_logic = dlsym(engine_lib, "kurage_logic");
-  if (kurage_logic == NULL) {
-    fprintf(stderr, "ERROR: could not find kurage_logic symbol in %s: %s\n",
-            engine_lib_name, dlerror());
-    return -1;
-  }
-
-  kurage_update = dlsym(engine_lib, "kurage_update");
-  if (kurage_update == NULL) {
-    fprintf(stderr, "ERROR: could not find kurage_update symbol in %s: %s\n",
-            engine_lib_name, dlerror());
-    return -1;
-  }
-
-  kurage_render = dlsym(engine_lib, "kurage_render");
-  if (kurage_render == NULL) {
-    fprintf(stderr, "ERROR: could not find kurage_render symbol in %s: %s\n",
-            engine_lib_name, dlerror());
-    return -1;
-  }
+  // Load all function pointers using the macro
+  #define X(name, ...) \
+    name = (name##_t)dlsym(engine_lib, #name); \
+    if (name == NULL) { \
+      fprintf(stderr, "ERROR: could not find %s symbol in %s: %s\n", #name, \
+              engine_lib_name, dlerror()); \
+      return -1; \
+    }
+  KURAGE_FUNC_LIST
+  #undef X
 
   return 1;
 }

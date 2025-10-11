@@ -22,7 +22,7 @@ KURAGE_SRC = src/engine/kurage.c
 # Raylib
 RAYLIB_LIB = ./lib/raylib/src/libraylib.a
 
-all: $(BUILD_DIR) $(KURAGE_BIN) $(ENGINE_SO)
+all: $(BUILD_DIR) $(KURAGE_BIN) reload
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -33,11 +33,9 @@ $(KURAGE_BIN): $(MAIN_SRC) $(RAYLIB_LIB)
 	$(CC) $(CFLAGS) $(INCLUDES) $(MAIN_SRC) -o $(KURAGE_BIN) $(LDFLAGS)
 
 # Build hot reloadable engine library
-$(ENGINE_SO): $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
+reload: $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
 	$(CC) -shared -fPIC $(CFLAGS) $(INCLUDES) $(ENGINE_SRC) $(KURAGE_SRC) -o $(ENGINE_SO) $(LDFLAGS)
 
-# Shortcut to rebuild just the shared library for hot reloading
-reload: $(ENGINE_SO)
 
 # Build Raylib if needed
 $(RAYLIB_LIB):

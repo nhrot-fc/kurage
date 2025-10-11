@@ -25,17 +25,14 @@ typedef struct {
   X(kurage_update, void, void)                                                 \
   X(kurage_render, void, void)
 
-// Define function types
-#define X(name, ret, ...) typedef ret(name##_t)(__VA_ARGS__);
-KURAGE_FUNC_LIST
-#undef X
-
-// These functions should be implemented in the engine.c file
+// When used in the implementation file, declare the functions
+#ifdef KURAGE_IMPLEMENTATION
 void kurage_init(void);
 KurageState *kurage_pre_reload(void);
 void kurage_post_reload(KurageState *state);
 void kurage_logic(void);
 void kurage_update(void);
 void kurage_render(void);
+#endif
 
 #endif // KURAGE_H

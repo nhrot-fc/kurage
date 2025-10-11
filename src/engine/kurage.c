@@ -6,6 +6,7 @@
  * Author: nhrot-fc
  */
 
+#define KURAGE_IMPLEMENTATION
 #include "kurage.h"
 #include "../../lib/raylib/src/raylib.h"
 #include "../config/config.h"
