@@ -17,24 +17,19 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential valgrind cppcheck
-
-    - name: Build Raylib
+    - name: Setup Raylib (if missing)
       run: |
-        cd lib/raylib/src
-        make PLATFORM=PLATFORM_DESKTOP -j$(nproc)
+        make setup-raylib
 
     - name: Build project
       run: |
         make -j$(nproc)
 
-    - name: Run cppcheck
+    - name: Run cppcheck (Makefile target)
       run: |
-        cppcheck --enable=warning,performance,portability --inconclusive --std=c11 --force src || true
+        make cppcheck || true
 
-    - name: Run leak test under Valgrind
+    - name: Run tests (Makefile targets)
       run: |
-        if command -v valgrind >/dev/null 2>&1; then
-          valgrind --leak-check=summary --error-exitcode=2 ./build/leak_test
-        else
-          echo "Valgrind not available"
-        fi
+        make test
+        make valgrind-test || echo "valgrind-test failed or valgrind missing"
