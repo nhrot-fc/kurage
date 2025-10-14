@@ -38,26 +38,27 @@ int lib_reload(void) {
   engine_lib = dlopen(engine_lib_name, RTLD_NOW);
 
   if (engine_lib == NULL) {
-    fprintf(stderr, "ERROR: could not load %s: %s\n", engine_lib_name, dlerror());
+    fprintf(stderr, "ERROR: could not load %s: %s\n", engine_lib_name,
+            dlerror());
     return -1;
   }
 
-  // Load all function pointers using the macro
-  #define X(name, ...) \
-    name = (name##_t)dlsym(engine_lib, #name); \
-    if (name == NULL) { \
-      fprintf(stderr, "ERROR: could not find %s symbol in %s: %s\n", #name, \
-              engine_lib_name, dlerror()); \
-      return -1; \
-    }
+// Load all function pointers using the macro
+#define X(name, ...)                                                           \
+  name = (name##_t)dlsym(engine_lib, #name);                                   \
+  if (name == NULL) {                                                          \
+    fprintf(stderr, "ERROR: could not find %s symbol in %s: %s\n", #name,      \
+            engine_lib_name, dlerror());                                       \
+    return -1;                                                                 \
+  }
   KURAGE_FUNC_LIST
-  #undef X
+#undef X
 
   return 1;
 }
 
 int main(void) {
-  size_t factor = 50;
+  size_t factor = 100;
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(factor * 16, factor * 9, "Kurage Physics Engine");
   SetTargetFPS(60);
@@ -88,6 +89,7 @@ int main(void) {
 
     BeginDrawing();
     ClearBackground(BLACK);
+    DrawFPS(0, 0);
     kurage_render();
     EndDrawing();
   }

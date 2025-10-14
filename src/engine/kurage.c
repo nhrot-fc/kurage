@@ -6,12 +6,16 @@
  * Author: nhrot-fc
  */
 
-#define KURAGE_IMPLEMENTATION
-#include "kurage.h"
-#include "../../lib/raylib/src/raylib.h"
-#include "../config/config.h"
+#include "engine.h"
+#include "kurage_math.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
+#define KURAGE_IMPLEMENTATION
+#include "../../lib/raylib/src/raylib.h"
+#include "../config/config.h"
+#include "kurage.h"
 
 // Global state to be preserved between reloads
 static KurageState *state = NULL;
@@ -51,6 +55,23 @@ void kurage_logic(void) {
 void kurage_update(void) {
   // Update physics simulation
   if (state && state->universe) {
+    // Check if window has been resized and update boundaries
+    static int lastWidth = 0;
+    static int lastHeight = 0;
+    int currentWidth = GetScreenWidth();
+    int currentHeight = GetScreenHeight();
+
+    if (currentWidth != lastWidth || currentHeight != lastHeight) {
+      // Window resized, update boundaries
+      float padding = 10.0f;
+      UniverseSetBoundaries(state->universe, currentWidth, currentHeight,
+                            padding, true);
+
+      // Update cached dimensions
+      lastWidth = currentWidth;
+      lastHeight = currentHeight;
+    }
+
     // Apply forces
     KVector2 gravity = {0, GRAVITY};
     PhysicsApplyGravity(state->universe, gravity);
@@ -65,17 +86,49 @@ void kurage_render(void) {
   if (!state || !state->universe)
     return;
 
-  // Here you would render all particles
-  // For example:
+  // Draw universe boundaries if they're enabled
+  if (state->universe->boundary.enabled) {
+    Color boundaryColor = ColorAlpha(WHITE, 0.3f); // Semitransparent white
+
+    // Draw rectangle outline for the boundary
+    DrawRectangleLines(
+        (int)state->universe->boundary.left, (int)state->universe->boundary.top,
+        (int)(state->universe->boundary.right - state->universe->boundary.left),
+        (int)(state->universe->boundary.bottom - state->universe->boundary.top),
+        boundaryColor);
+  }
+
+  // Render all particles
   for (uint32_t i = 0; i < state->universe->maxEntities; i++) {
     if (state->universe->activeEntities[i] &&
         (state->universe->entityMasks[i] & COMPONENT_PARTICLE)) {
 
       ParticleComponent *particle = &state->universe->particles[i];
 
-      // Draw particle (using Raylib)
+      // Get velocity for coloring (if mechanics component exists)
+      Color particleColor = WHITE;
+      if (state->universe->entityMasks[i] & COMPONENT_MECHANICS) {
+        MechanicsComponent *mechanics = &state->universe->mechanics[i];
+        double speed = sqrt(mechanics->velocity.x * mechanics->velocity.x +
+                            mechanics->velocity.y * mechanics->velocity.y);
+
+        // Color based on speed (blue=slow, white=medium, red=fast)
+        if (speed > 100) {
+          particleColor = RED;
+        } else if (speed > 50) {
+          particleColor = ORANGE;
+        } else if (speed > 20) {
+          particleColor = YELLOW;
+        } else if (speed > 10) {
+          particleColor = GREEN;
+        } else {
+          particleColor = BLUE;
+        }
+      }
+
+      // Draw particle
       DrawCircle((int)particle->position.x, (int)particle->position.y,
-                 OBJECT_RADIUS, WHITE);
+                 OBJECT_RADIUS, particleColor);
     }
   }
 }
@@ -89,9 +142,23 @@ static void init_universe(void) {
       return;
     }
 
-    // Create some example particles
-    KVector2 pos = {400, 300};
-    KVector2 vel = {0, 0};
-    ParticleCreate(state->universe, pos, vel, 1.0);
+    // Set universe boundaries based on window size with padding
+    int windowWidth = GetScreenWidth();
+    int windowHeight = GetScreenHeight();
+    float padding = 10.0f; // 10 pixels padding from screen edge
+    UniverseSetBoundaries(state->universe, windowWidth, windowHeight, padding,
+                          true);
+
+    srand(time(NULL));
+    for (int i = 0; i < KURAGE_MAX_ENTITIES; i++) {
+      double x = rand() % (int)state->universe->boundary.right +
+              state->universe->boundary.left;
+      double y = rand() % (int)state->universe->boundary.bottom +
+              state->universe->boundary.top;
+
+      double velx = rand() % 80 - 40;
+      double vely = rand() % 80 - 40;
+      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely}, 1.0);
+    }
   }
 }

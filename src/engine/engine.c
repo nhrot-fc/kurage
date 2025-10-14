@@ -37,6 +37,13 @@ Universe *UniverseCreate(uint32_t maxEntities) {
     return NULL;
   }
 
+  // Initialize boundary with default values
+  universe->boundary.left = 0;
+  universe->boundary.right = 800;
+  universe->boundary.top = 0;
+  universe->boundary.bottom = 600;
+  universe->boundary.enabled = true;
+
   return universe;
 }
 
@@ -62,7 +69,7 @@ void UniverseUpdate(Universe *universe, double deltaTime) {
   KVector2 gravity = {0, GRAVITY};
   PhysicsApplyGravity(universe, gravity);
 
-  // Integrate forces
+  // Integrate forces (this also handles boundary collisions internally)
   PhysicsIntegrateForces(universe, deltaTime);
 }
 
@@ -265,6 +272,59 @@ void PhysicsIntegrateForces(Universe *universe, double deltaTime) {
       // Reset force accumulator
       universe->mechanics[i].forceAccum.x = 0.0;
       universe->mechanics[i].forceAccum.y = 0.0;
+    }
+  }
+  
+  // After all forces are integrated, resolve boundary collisions
+  if (universe->boundary.enabled) {
+    PhysicsResolveBoundaryCollisions(universe);
+  }
+}
+
+void UniverseSetBoundaries(Universe *universe, int windowWidth, int windowHeight, 
+                          float padding, bool enabled) {
+  if (!universe)
+    return;
+    
+  universe->boundary.left = padding;
+  universe->boundary.top = padding;
+  universe->boundary.right = windowWidth - padding;
+  universe->boundary.bottom = windowHeight - padding;
+  universe->boundary.enabled = enabled;
+}
+
+void PhysicsResolveBoundaryCollisions(Universe *universe) {
+  if (!universe || !universe->boundary.enabled)
+    return;
+    
+  for (uint32_t i = 0; i < universe->maxEntities; i++) {
+    // Only process active entities with both particle and mechanics components
+    if (!universe->activeEntities[i] || 
+        (universe->entityMasks[i] & (COMPONENT_PARTICLE | COMPONENT_MECHANICS)) != 
+        (COMPONENT_PARTICLE | COMPONENT_MECHANICS))
+      continue;
+      
+    ParticleComponent *particle = &universe->particles[i];
+    MechanicsComponent *mechanics = &universe->mechanics[i];
+    
+    // Handle left and right boundaries
+    if (particle->position.x < universe->boundary.left) {
+      particle->position.x = universe->boundary.left;
+      mechanics->velocity.x = -mechanics->velocity.x * RESTITUTION;
+    } 
+    else if (particle->position.x > universe->boundary.right) {
+      particle->position.x = universe->boundary.right;
+      mechanics->velocity.x = -mechanics->velocity.x * RESTITUTION;
+    }
+    
+    // Handle top and bottom boundaries
+    if (particle->position.y < universe->boundary.top) {
+      particle->position.y = universe->boundary.top;
+      mechanics->velocity.y = -mechanics->velocity.y * RESTITUTION;
+    } 
+    else if (particle->position.y > universe->boundary.bottom) {
+      particle->position.y = universe->boundary.bottom;
+      mechanics->velocity.y = -mechanics->velocity.y * RESTITUTION;
     }
   }
 }

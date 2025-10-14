@@ -15,8 +15,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define DELTA_TIME 0.0001
+#define DELTA_TIME 0.1
 #define GRAVITY 9.81
+#define RESTITUTION 0.8
 
 /*-----------------------------------------------------------------------------
  * ECS Types and Definitions
@@ -25,6 +26,17 @@
 #define KURAGE_MAX_ENTITIES MAX_OBJECTS
 typedef uint32_t EntityID;
 #define INVALID_ENTITY UINT32_MAX
+
+/**
+ * Boundary structure representing the walls of the universe
+ */
+typedef struct {
+    double left;
+    double right;
+    double top;
+    double bottom;
+    bool enabled;
+} UniverseBoundary;
 
 /**
  * Component type masks for identifying what components an entity has
@@ -71,6 +83,9 @@ typedef struct {
   /** Component storage - contiguous arrays for cache efficiency */
   ParticleComponent *particles;
   MechanicsComponent *mechanics;
+  
+  /** Universe boundaries */
+  UniverseBoundary boundary;
 } Universe;
 
 /*-----------------------------------------------------------------------------
@@ -202,6 +217,25 @@ void PhysicsApplyGravity(Universe *universe, KVector2 gravityVector);
  * @param deltaTime Time step in seconds
  */
 void PhysicsIntegrateForces(Universe *universe, double deltaTime);
+
+/**
+ * Sets the universe boundaries based on window dimensions and padding
+ * 
+ * @param universe Universe to update boundaries for
+ * @param windowWidth Width of the window in pixels
+ * @param windowHeight Height of the window in pixels
+ * @param padding Distance from window edge to boundary
+ * @param enabled Whether boundary collision is enabled
+ */
+void UniverseSetBoundaries(Universe *universe, int windowWidth, int windowHeight, 
+                          float padding, bool enabled);
+
+/**
+ * Resolves boundary collisions for all particles
+ * 
+ * @param universe Universe to process
+ */
+void PhysicsResolveBoundaryCollisions(Universe *universe);
 
 /**
  * Creates a basic particle entity with position, velocity, and mass
