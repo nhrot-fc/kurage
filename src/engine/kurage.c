@@ -103,7 +103,7 @@ void kurage_render(void) {
     if (state->universe->activeEntities[i] &&
         (state->universe->entityMasks[i] & COMPONENT_PARTICLE)) {
 
-      ParticleComponent *particle = &state->universe->particles[i];
+      KineticBodyComponent *particle = &state->universe->kineticBodies[i];
 
       // Get velocity for coloring (if mechanics component exists)
       Color particleColor = WHITE;
@@ -158,7 +158,8 @@ static void init_universe(void) {
 
       double velx = rand() % 80 - 40;
       double vely = rand() % 80 - 40;
-      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely}, 1.0);
+      double mass = (rand() % 100 + 1) / 100.0;
+      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely}, mass);
     }
   }
 }

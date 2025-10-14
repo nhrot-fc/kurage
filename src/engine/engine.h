@@ -57,7 +57,7 @@ typedef struct {
   KVector2 position;  /**< Current position */
   KVector2 previous;  /**< Previous position (for verlet integration) */
   double inverseMass; /**< Inverse of mass for efficient calculations */
-} ParticleComponent;
+} KineticBodyComponent;
 
 /**
  * Component for storing mechanics properties
@@ -81,7 +81,7 @@ typedef struct {
   bool *activeEntities;       /**< Whether each entity slot is active */
 
   /** Component storage - contiguous arrays for cache efficiency */
-  ParticleComponent *particles;
+  KineticBodyComponent *kineticBodies;
   MechanicsComponent *mechanics;
   
   /** Universe boundaries */
@@ -141,7 +141,7 @@ bool UniverseDestroyEntity(Universe *universe, EntityID entity);
  *----------------------------------------------------------------------------*/
 
 /**
- * Adds a particle component to an entity
+ * Adds a kineic body component to an entity
  *
  * @param universe Universe containing the entity
  * @param entity Entity to add the component to
@@ -149,7 +149,7 @@ bool UniverseDestroyEntity(Universe *universe, EntityID entity);
  * @param mass Mass value (use INFINITY for static objects)
  * @return true if successful, false if failed
  */
-bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
+bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
                                   KVector2 position, double mass);
 
 /**
@@ -169,13 +169,13 @@ bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
  *----------------------------------------------------------------------------*/
 
 /**
- * Gets the particle component of an entity
+ * Gets the kinetic body component of an entity
  *
  * @param universe Universe containing the entity
  * @param entity Entity to get the component from
  * @return Pointer to the component, or NULL if entity doesn't have it
  */
-ParticleComponent *UniverseGetParticleComponent(Universe *universe,
+KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,
                                                 EntityID entity);
 
 /**

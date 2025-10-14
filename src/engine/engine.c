@@ -25,14 +25,14 @@ Universe *UniverseCreate(uint32_t maxEntities) {
   universe->entityMasks =
       (ComponentMask *)calloc(maxEntities, sizeof(ComponentMask));
   universe->activeEntities = (bool *)calloc(maxEntities, sizeof(bool));
-  universe->particles =
-      (ParticleComponent *)calloc(maxEntities, sizeof(ParticleComponent));
+  universe->kineticBodies =
+      (KineticBodyComponent *)calloc(maxEntities, sizeof(KineticBodyComponent));
   universe->mechanics =
       (MechanicsComponent *)calloc(maxEntities, sizeof(MechanicsComponent));
 
   // Check if allocations succeeded
   if (!universe->entityMasks || !universe->activeEntities ||
-      !universe->particles || !universe->mechanics) {
+      !universe->kineticBodies || !universe->mechanics) {
     UniverseDestroy(universe);
     return NULL;
   }
@@ -54,7 +54,7 @@ void UniverseDestroy(Universe *universe) {
   // Free component arrays
   free(universe->entityMasks);
   free(universe->activeEntities);
-  free(universe->particles);
+  free(universe->kineticBodies);
   free(universe->mechanics);
 
   // Free universe structure
@@ -116,21 +116,21 @@ bool UniverseDestroyEntity(Universe *universe, EntityID entity) {
 
 /* Component Management */
 
-bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
+bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
                                   KVector2 position, double mass) {
   if (!universe || entity >= universe->maxEntities ||
       !universe->activeEntities[entity])
     return false;
 
   // Add particle component
-  universe->particles[entity].position = position;
-  universe->particles[entity].previous = position;
+  universe->kineticBodies[entity].position = position;
+  universe->kineticBodies[entity].previous = position;
 
   // Calculate inverse mass (handling infinite mass for static objects)
   if (mass <= 0 || isinf(mass)) {
-    universe->particles[entity].inverseMass = 0.0;
+    universe->kineticBodies[entity].inverseMass = 0.0;
   } else {
-    universe->particles[entity].inverseMass = 1.0 / mass;
+    universe->kineticBodies[entity].inverseMass = 1.0 / mass;
   }
 
   // Update entity's component mask
@@ -159,14 +159,14 @@ bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
 
 /* Component Access */
 
-ParticleComponent *UniverseGetParticleComponent(Universe *universe,
+KineticBodyComponent *UniverseGetParticleComponent(Universe *universe,
                                                 EntityID entity) {
   if (!universe || entity >= universe->maxEntities ||
       !universe->activeEntities[entity])
     return NULL;
 
   if (universe->entityMasks[entity] & COMPONENT_PARTICLE) {
-    return &universe->particles[entity];
+    return &universe->kineticBodies[entity];
   }
 
   return NULL;
@@ -217,11 +217,11 @@ void PhysicsApplyGravity(Universe *universe, KVector2 gravityVector) {
             (COMPONENT_PARTICLE | COMPONENT_MECHANICS)) {
 
       // Only apply gravity to entities with non-infinite mass
-      if (universe->particles[i].inverseMass > 0) {
+      if (universe->kineticBodies[i].inverseMass > 0) {
         // F = m * g, but we'll use F = g / inverseMass
         KVector2 gravityForce;
-        gravityForce.x = gravityVector.x / universe->particles[i].inverseMass;
-        gravityForce.y = gravityVector.y / universe->particles[i].inverseMass;
+        gravityForce.x = gravityVector.x / universe->kineticBodies[i].inverseMass;
+        gravityForce.y = gravityVector.y / universe->kineticBodies[i].inverseMass;
 
         // Add to force accumulator
         universe->mechanics[i].forceAccum.x += gravityForce.x;
@@ -242,18 +242,18 @@ void PhysicsIntegrateForces(Universe *universe, double deltaTime) {
             (COMPONENT_PARTICLE | COMPONENT_MECHANICS)) {
 
       // Skip entities with infinite mass
-      if (universe->particles[i].inverseMass <= 0)
+      if (universe->kineticBodies[i].inverseMass <= 0)
         continue;
 
       // Store old position for verlet integration
-      universe->particles[i].previous = universe->particles[i].position;
+      universe->kineticBodies[i].previous = universe->kineticBodies[i].position;
 
       // Calculate acceleration from forces: a = F * inverseMass
       KVector2 acceleration;
       acceleration.x = universe->mechanics[i].forceAccum.x *
-                       universe->particles[i].inverseMass;
+                       universe->kineticBodies[i].inverseMass;
       acceleration.y = universe->mechanics[i].forceAccum.y *
-                       universe->particles[i].inverseMass;
+                       universe->kineticBodies[i].inverseMass;
 
       // Add base acceleration
       acceleration.x += universe->mechanics[i].acceleration.x;
@@ -264,9 +264,9 @@ void PhysicsIntegrateForces(Universe *universe, double deltaTime) {
       universe->mechanics[i].velocity.y += acceleration.y * deltaTime;
 
       // Update position: p = p + v * dt
-      universe->particles[i].position.x +=
+      universe->kineticBodies[i].position.x +=
           universe->mechanics[i].velocity.x * deltaTime;
-      universe->particles[i].position.y +=
+      universe->kineticBodies[i].position.y +=
           universe->mechanics[i].velocity.y * deltaTime;
 
       // Reset force accumulator
@@ -304,7 +304,7 @@ void PhysicsResolveBoundaryCollisions(Universe *universe) {
         (COMPONENT_PARTICLE | COMPONENT_MECHANICS))
       continue;
       
-    ParticleComponent *particle = &universe->particles[i];
+    KineticBodyComponent *particle = &universe->kineticBodies[i];
     MechanicsComponent *mechanics = &universe->mechanics[i];
     
     // Handle left and right boundaries
@@ -335,7 +335,7 @@ EntityID ParticleCreate(Universe *universe, KVector2 position,
   if (entity == INVALID_ENTITY)
     return INVALID_ENTITY;
 
-  if (!UniverseAddParticleComponent(universe, entity, position, mass)) {
+  if (!UniverseAddKineticBodyComponent(universe, entity, position, mass)) {
     UniverseDestroyEntity(universe, entity);
     return INVALID_ENTITY;
   }
