@@ -5,7 +5,6 @@
  * Engine. Implements a simplified data-oriented design for basic particle
  * physics simulation.
  *
- * Author: nhrot-fc
  */
 #ifndef ENGINE_H
 #define ENGINE_H

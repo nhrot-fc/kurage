@@ -4,7 +4,6 @@
  * Implementation of the Kurage Physics Engine core functionality.
  * Contains entity-component-system (ECS) logic and physics systems.
  *
- * Author: nhrot-fc
  */
 
 #include "engine.h"

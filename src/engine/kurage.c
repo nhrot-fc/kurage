@@ -3,7 +3,6 @@
  *
  * Implementation of the hot reloadable functions for the Kurage Physics Engine.
  *
- * Author: nhrot-fc
  */
 
 #include <stdio.h>
