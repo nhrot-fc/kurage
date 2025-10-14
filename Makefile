@@ -5,53 +5,57 @@
 # Minimal, clear Makefile for Kurage
 # Targets: all, build, reload, test, valgrind-test, cppcheck, run, clean
 
-# Tools
-CC := gcc
-
-# Flags
-CFLAGS := -Wall -Wextra -I./lib/raylib/src -Isrc
-LDFLAGS := -L./lib/raylib/src -lraylib -lm -lpthread -ldl -lrt -lX11
-SHARED_FLAGS := -shared -fPIC
+# Raylib
+LIB_DIR := lib
+RAYLIB_DIR := $(LIB_DIR)/raylib
+RAYLIB_SRC := $(RAYLIB_DIR)/src
+RAYLIB_LIB := $(RAYLIB_SRC)/libraylib.so
 
 # Paths
 BUILD_DIR := build
 BIN := $(BUILD_DIR)/kurage
 ENGINE_SO := $(BUILD_DIR)/libkurage.so
 TEST_BIN := $(BUILD_DIR)/leak_test
+BIN_DIR := $(BUILD_DIR)/bin
 
-# Sources
-MAIN_SRC := src/main.c
-ENGINE_SRC := src/engine/engine.c src/engine/kurage_math.c
-KURAGE_SRC := src/engine/kurage.c
-TEST_SRC := tests/leak_test.c
+# Tools
+CC := gcc
+CFLAGS := -Wall -Wl,-rpath=./$(RAYLIB_SRC)
+LDFLAGS := -L./$(RAYLIB_SRC) -lraylib -lm -lpthread -ldl -lrt -lX11
+INCLUDES := -I./$(RAYLIB_SRC) -Isrc
+SHARED_FLAGS := -shared -fPIC
 
-# Raylib
-RAYLIB_DIR := lib/raylib
-RAYLIB_SRC := $(RAYLIB_DIR)/src
-RAYLIB_LIB := $(RAYLIB_SRC)/libraylib.a
+# Output files
+KURAGE_BIN = $(BUILD_DIR)/kurage
+ENGINE_SO = $(BUILD_DIR)/libkurage.so
 
-.PHONY: all build reload test valgrind-test cppcheck check run clean setup-raylib
+# Source files
+MAIN_SRC = src/main.c
+ENGINE_SRC = src/engine/engine.c src/engine/kurage_math.c
+KURAGE_SRC = src/engine/kurage.c
+TEST_SRC = tests/leak_test.c
+
+.PHONY: all build reload test valgrind-test cppcheck check run clean dirs
 
 # Default target
 all: build
+
+dirs:
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(RAYLIB_DIR)
+	@mkdir -p $(BIN_DIR)
 
 # Build everything (binary + shared lib)
 build: $(BIN) reload
 	@echo "build: done"
 
-# Ensure build directories exist
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
-
 # Build main executable
-$(BIN): $(MAIN_SRC) | $(BUILD_DIR) $(RAYLIB_LIB)
-	$(CC) $(CFLAGS) $(MAIN_SRC) -o $(BIN) $(LDFLAGS)
-	@echo "Built $(BIN)"
+$(KURAGE_BIN): $(MAIN_SRC) $(RAYLIB_LIB)
+	$(CC) $(CFLAGS) $(INCLUDES) $(MAIN_SRC) -o $(KURAGE_BIN) $(LDFLAGS)
 
 # Build shared engine (hot-reloadable)
-reload: | $(BUILD_DIR) $(RAYLIB_LIB)
-	$(CC) $(SHARED_FLAGS) $(CFLAGS) $(ENGINE_SRC) $(KURAGE_SRC) -o $(ENGINE_SO) $(LDFLAGS)
-	@echo "Built $(ENGINE_SO)"
+reload: $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
+	$(CC) -shared -fPIC $(CFLAGS) $(INCLUDES) $(ENGINE_SRC) $(KURAGE_SRC) -o $(ENGINE_SO) $(LDFLAGS)
 
 # ----------------------
 # Tests & checks
@@ -60,7 +64,7 @@ test: $(TEST_BIN)
 	@echo "Running leak_test..."
 	@$(TEST_BIN)
 
-$(TEST_BIN): $(TEST_SRC) | $(BUILD_DIR)
+$(TEST_BIN): $(TEST_SRC) | $(RAYLIB_LIB)
 	$(CC) $(CFLAGS) $(TEST_SRC) -o $(TEST_BIN)
 	@echo "Built $(TEST_BIN)"
 
@@ -82,24 +86,23 @@ check: cppcheck test
 	@echo "All quick checks passed (except optional valgrind)."
 
 # ----------------------
-# Raylib helper
+# Raylib
 # ----------------------
-setup-raylib:
+$(RAYLIB_LIB): dirs
 	@if [ ! -d "$(RAYLIB_DIR)" ]; then \
-		echo "Cloning raylib..."; git clone --depth 1 https://github.com/raysan5/raylib.git $(RAYLIB_DIR); \
+		git clone --depth 1 https://github.com/raysan5/raylib.git $(RAYLIB_DIR); \
 	fi
-	@echo "Building raylib...";
-	@cd $(RAYLIB_SRC) && make PLATFORM=PLATFORM_DESKTOP -j$(shell nproc)
-
-$(RAYLIB_LIB): setup-raylib
-	@echo "Raylib built -> $(RAYLIB_LIB)"
+	@if [ ! -f "$(RAYLIB_LIB)" ]; then \
+		echo "Raylib not built, building now..."; \
+		cd $(RAYLIB_SRC) && make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED; \
+	fi
 
 # ----------------------
 # Run / cleanup
 # ----------------------
 run: all
-	@echo "Running $(BIN)"
-	@$(BIN)
+	@echo "Running $(KURAGE_BIN)"
+	@$(KURAGE_BIN)
 
 clean:
 	rm -rf $(BUILD_DIR)
