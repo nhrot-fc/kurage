@@ -260,10 +260,11 @@ void PhysicsIntegrateForces(Universe *universe, double deltaTime) {
       KVector2 previousPos = universe->kineticBodies[i].previous;
 
       // Update position using Verlet integration: new_pos = 2*current - previous + a*dt*dt
+      double dt2 = deltaTime * deltaTime;
       universe->kineticBodies[i].position.x = 
-          2.0 * currentPos.x - previousPos.x + acceleration.x * deltaTime * deltaTime;
+          2.0 * currentPos.x - previousPos.x + acceleration.x * dt2;
       universe->kineticBodies[i].position.y = 
-          2.0 * currentPos.y - previousPos.y + acceleration.y * deltaTime * deltaTime;
+          2.0 * currentPos.y - previousPos.y + acceleration.y * dt2;
 
       // Update previous position for next iteration
       universe->kineticBodies[i].previous = currentPos;
