@@ -43,7 +43,7 @@ int main(void) {
     
     // With Verlet integration and gravity:
     // Note: Verlet has a known characteristic where the first step from rest
-    // gives 2x the expected displacement (0.098 vs 0.049). This is because
+    // gives 2x the expected displacement (g*dt^2 vs 0.5*g*dt^2). This is because
     // prev=pos when at rest. Despite this initial offset, Verlet provides
     // better long-term stability and energy conservation than Euler.
     // The velocity is still correctly calculated.
