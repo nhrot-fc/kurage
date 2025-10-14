@@ -6,16 +6,15 @@
  * Author: nhrot-fc
  */
 
-#include "engine.h"
-#include "kurage_math.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define KURAGE_IMPLEMENTATION
 #include "../../lib/raylib/src/raylib.h"
 #include "../config/config.h"
+#include "engine.h"
 #include "kurage.h"
+#include "kurage_math.h"
 
 // Global state to be preserved between reloads
 static KurageState *state = NULL;
@@ -88,7 +87,7 @@ void kurage_render(void) {
 
   // Draw universe boundaries if they're enabled
   if (state->universe->boundary.enabled) {
-    Color boundaryColor = ColorAlpha(WHITE, 0.3f); // Semitransparent white
+    Color boundaryColor = ColorAlpha(WHITE, 0.8f); // Semitransparent white
 
     // Draw rectangle outline for the boundary
     DrawRectangleLines(
@@ -152,14 +151,15 @@ static void init_universe(void) {
     srand(time(NULL));
     for (int i = 0; i < KURAGE_MAX_ENTITIES; i++) {
       double x = rand() % (int)state->universe->boundary.right +
-              state->universe->boundary.left;
+                 state->universe->boundary.left;
       double y = rand() % (int)state->universe->boundary.bottom +
-              state->universe->boundary.top;
+                 state->universe->boundary.top;
 
       double velx = rand() % 80 - 40;
       double vely = rand() % 80 - 40;
       double mass = (rand() % 100 + 1) / 100.0;
-      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely}, mass);
+      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely},
+                     mass);
     }
   }
 }

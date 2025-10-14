@@ -1,22 +1,10 @@
 #include "../lib/raylib/src/raylib.h"
+#include "engine/kurage.h"
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// Forward declare the KurageState type without including the entire header
-// This avoids redefinition issues
-typedef struct KurageState KurageState;
-
-// Define the function prototypes for hot-reloadable functions
-#define KURAGE_FUNC_LIST                                                       \
-  X(kurage_init, void, void)                                                   \
-  X(kurage_pre_reload, KurageState *, void)                                    \
-  X(kurage_post_reload, void, KurageState *)                                   \
-  X(kurage_logic, void, void)                                                  \
-  X(kurage_update, void, void)                                                 \
-  X(kurage_render, void, void)
 
 // Define function pointer types
 #define X(name, ret, ...) typedef ret (*name##_t)(__VA_ARGS__);
