@@ -16,7 +16,11 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential valgrind cppcheck
+        sudo apt-get install -y --no-install-recommends \
+          build-essential git valgrind cppcheck \
+          libasound2-dev libx11-dev libxrandr-dev libxi-dev \
+          libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev \
+          libwayland-dev libxkbcommon-dev
     - name: Setup Raylib (if missing)
       run: |
         make setup-raylib
