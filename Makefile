@@ -42,7 +42,7 @@ all: build
 
 dirs:
 	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(RAYLIB_DIR)
+	@mkdir -p $(LIB_DIR)
 	@mkdir -p $(BIN_DIR)
 
 # Build everything (binary + shared lib)
