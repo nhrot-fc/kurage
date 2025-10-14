@@ -158,7 +158,7 @@ bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
 
 /* Component Access */
 
-KineticBodyComponent *UniverseGetParticleComponent(Universe *universe,
+KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,
                                                 EntityID entity) {
   if (!universe || entity >= universe->maxEntities ||
       !universe->activeEntities[entity])
@@ -244,10 +244,7 @@ void PhysicsIntegrateForces(Universe *universe, double deltaTime) {
       if (universe->kineticBodies[i].inverseMass <= 0)
         continue;
 
-      // Store old position for verlet integration
-      universe->kineticBodies[i].previous = universe->kineticBodies[i].position;
-
-      // Calculate acceleration from forces: a = F * inverseMass
+      // Calculate total acceleration from forces: a = F * inverseMass
       KVector2 acceleration;
       acceleration.x = universe->mechanics[i].forceAccum.x *
                        universe->kineticBodies[i].inverseMass;
@@ -258,15 +255,22 @@ void PhysicsIntegrateForces(Universe *universe, double deltaTime) {
       acceleration.x += universe->mechanics[i].acceleration.x;
       acceleration.y += universe->mechanics[i].acceleration.y;
 
-      // Update velocity: v = v + a * dt
-      universe->mechanics[i].velocity.x += acceleration.x * deltaTime;
-      universe->mechanics[i].velocity.y += acceleration.y * deltaTime;
+      // Store current position before updating (for Verlet integration)
+      KVector2 currentPos = universe->kineticBodies[i].position;
+      KVector2 previousPos = universe->kineticBodies[i].previous;
 
-      // Update position: p = p + v * dt
-      universe->kineticBodies[i].position.x +=
-          universe->mechanics[i].velocity.x * deltaTime;
-      universe->kineticBodies[i].position.y +=
-          universe->mechanics[i].velocity.y * deltaTime;
+      // Update position using Verlet integration: new_pos = 2*current - previous + a*dt*dt
+      universe->kineticBodies[i].position.x = 
+          2.0 * currentPos.x - previousPos.x + acceleration.x * deltaTime * deltaTime;
+      universe->kineticBodies[i].position.y = 
+          2.0 * currentPos.y - previousPos.y + acceleration.y * deltaTime * deltaTime;
+
+      // Update previous position for next iteration
+      universe->kineticBodies[i].previous = currentPos;
+
+      // Derive velocity from position change: v = (new_pos - current_pos) / dt
+      universe->mechanics[i].velocity.x = (universe->kineticBodies[i].position.x - currentPos.x) / deltaTime;
+      universe->mechanics[i].velocity.y = (universe->kineticBodies[i].position.y - currentPos.y) / deltaTime;
 
       // Reset force accumulator
       universe->mechanics[i].forceAccum.x = 0.0;
@@ -344,6 +348,11 @@ EntityID ParticleCreate(Universe *universe, KVector2 position,
     UniverseDestroyEntity(universe, entity);
     return INVALID_ENTITY;
   }
+
+  // For Verlet integration, set previous position based on initial velocity
+  // previous = position - velocity * dt
+  universe->kineticBodies[entity].previous.x = position.x - velocity.x * DELTA_TIME;
+  universe->kineticBodies[entity].previous.y = position.y - velocity.y * DELTA_TIME;
 
   return entity;
 }

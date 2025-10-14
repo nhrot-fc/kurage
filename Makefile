@@ -34,6 +34,8 @@ MAIN_SRC = src/main.c
 ENGINE_SRC = src/engine/engine.c src/engine/kurage_math.c
 KURAGE_SRC = src/engine/kurage.c
 TEST_SRC = tests/leak_test.c
+VERLET_TEST_SRC = tests/verlet_test.c
+VERLET_TEST_BIN = $(BUILD_DIR)/verlet_test
 
 .PHONY: all build reload test valgrind-test cppcheck check run clean dirs
 
@@ -60,13 +62,19 @@ reload: $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
 # ----------------------
 # Tests & checks
 # ----------------------
-test: $(TEST_BIN)
+test: $(TEST_BIN) $(VERLET_TEST_BIN)
 	@echo "Running leak_test..."
 	@$(TEST_BIN)
+	@echo "Running verlet_test..."
+	@$(VERLET_TEST_BIN)
 
 $(TEST_BIN): $(TEST_SRC) | $(RAYLIB_LIB)
 	$(CC) $(CFLAGS) $(TEST_SRC) -o $(TEST_BIN)
 	@echo "Built $(TEST_BIN)"
+
+$(VERLET_TEST_BIN): $(VERLET_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB)
+	$(CC) $(CFLAGS) $(INCLUDES) $(VERLET_TEST_SRC) $(ENGINE_SRC) -o $(VERLET_TEST_BIN) -lm
+	@echo "Built $(VERLET_TEST_BIN)"
 
 valgrind-test: $(TEST_BIN)
 	@if command -v valgrind >/dev/null 2>&1; then \
