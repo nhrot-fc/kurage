@@ -36,6 +36,40 @@ $(KURAGE_BIN): $(MAIN_SRC) $(RAYLIB_LIB)
 reload: $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
 	$(CC) -shared -fPIC $(CFLAGS) $(INCLUDES) $(ENGINE_SRC) $(KURAGE_SRC) -o $(ENGINE_SO) $(LDFLAGS)
 
+# --------------------
+# Tests & checks
+# --------------------
+TEST_BIN = $(BUILD_DIR)/leak_test
+TEST_SRC = tests/leak_test.c
+
+.PHONY: test valgrind-test cppcheck check
+
+test: $(TEST_BIN)
+	@echo "Running leak_test (simple runtime smoke test)..."
+	@$(TEST_BIN)
+
+$(TEST_BIN): $(TEST_SRC)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) $(TEST_SRC) -o $(TEST_BIN)
+
+valgrind-test: $(TEST_BIN)
+	@echo "Running leak_test under Valgrind..."
+	@if command -v valgrind >/dev/null 2>&1; then \
+		valgrind --leak-check=full --error-exitcode=2 ./$(TEST_BIN); \
+	else \
+		echo "Valgrind not found; install valgrind to run this check"; exit 0; \
+	fi
+
+cppcheck:
+	@if command -v cppcheck >/dev/null 2>&1; then \
+		cppcheck --enable=warning,performance,portability --inconclusive --std=c11 --force src || true; \
+	else \
+		echo "cppcheck not found; skipping static analysis"; \
+	fi
+
+check: cppcheck test
+	@echo "Checks completed. Try 'make valgrind-test' locally for leak detection."
+
 
 # Build Raylib if needed
 $(RAYLIB_LIB):

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential valgrind cppcheck
+
+    - name: Build Raylib
+      run: |
+        cd lib/raylib/src
+        make PLATFORM=PLATFORM_DESKTOP -j$(nproc)
+
+    - name: Build project
+      run: |
+        make -j$(nproc)
+
+    - name: Run cppcheck
+      run: |
+        cppcheck --enable=warning,performance,portability --inconclusive --std=c11 --force src || true
+
+    - name: Run leak test under Valgrind
+      run: |
+        if command -v valgrind >/dev/null 2>&1; then
+          valgrind --leak-check=summary --error-exitcode=2 ./build/leak_test
+        else
+          echo "Valgrind not available"
+        fi
