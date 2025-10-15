@@ -15,7 +15,8 @@
 #include <stdint.h>
 
 #define DELTA_TIME 0.1
-#define GRAVITY 9.81
+#define GRAVITY_X 0.0
+#define GRAVITY_Y 9.81
 #define RESTITUTION 0.8
 
 /*-----------------------------------------------------------------------------
@@ -202,20 +203,34 @@ MechanicsComponent *UniverseGetMechanicsComponent(Universe *universe,
 bool PhysicsApplyForce(Universe *universe, EntityID entity, KVector2 force);
 
 /**
- * Applies gravity to all entities with particle and mechanics components
+ * Applies forces (like gravity) to all applicable entities
  *
  * @param universe Universe to process
- * @param gravityVector Gravity force vector
  */
-void PhysicsApplyGravity(Universe *universe, KVector2 gravityVector);
+void PhysicsForcesUpdate(Universe *universe);
 
 /**
- * Integrates forces and updates positions and velocities
+ * Updates mechanics (acceleration and velocity) for all applicable entities
  *
  * @param universe Universe to update
  * @param deltaTime Time step in seconds
  */
-void PhysicsIntegrateForces(Universe *universe, double deltaTime);
+void PhysicsMechanicsUpdate(Universe *universe, double deltaTime);
+
+/**
+ * Updates positions based on velocities for all applicable entities
+ *
+ * @param universe Universe to update
+ * @param deltaTime Time step in seconds
+ */
+void PhysicsPositionUpdate(Universe *universe, double deltaTime);
+
+/**
+ * Clears force accumulators for the next integration step
+ *
+ * @param universe Universe to update
+ */
+void PhysicsClearForces(Universe *universe);
 
 /**
  * Sets the universe boundaries based on window dimensions and padding

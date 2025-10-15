@@ -70,12 +70,9 @@ void kurage_update(void) {
       lastHeight = currentHeight;
     }
 
-    // Apply forces
-    KVector2 gravity = {0, GRAVITY};
-    PhysicsApplyGravity(state->universe, gravity);
+    float deltaTime = 8 * GetFrameTime();
 
-    // Integrate forces and update positions
-    PhysicsIntegrateForces(state->universe, DELTA_TIME);
+    UniverseUpdate(state->universe, deltaTime);
   }
 }
 
@@ -155,7 +152,7 @@ static void init_universe(void) {
                  state->universe->boundary.top;
 
       double velx = rand() % 80 - 40;
-      double vely = rand() % 80 - 40;
+      double vely = 0; // rand() % 80 - 40;
       double mass = (rand() % 100 + 1) / 100.0;
       ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely},
                      mass);

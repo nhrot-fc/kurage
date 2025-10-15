@@ -12,75 +12,56 @@
 /**
  * KVector2 Operations Implementation
  */
-double KVector2Norm(KVector2 *v) {
-  if (v == NULL)
-    return 0.0;
-  return sqrt(v->x * v->x + v->y * v->y);
+double KVector2Norm(KVector2 v) {
+  return sqrt(v.x * v.x + v.y * v.y);
 }
 
-KVector2 KVector2Negate(KVector2 *v) {
+KVector2 KVector2Negate(KVector2 v) {
   KVector2 result = {0, 0};
-  if (v == NULL)
-    return result;
-
-  result.x = -v->x;
-  result.y = -v->y;
+  result.x = -v.x;
+  result.y = -v.y;
 
   return result;
 }
 
-KVector2 KVector2Unit(KVector2 *v) {
+KVector2 KVector2Unit(KVector2 v) {
   KVector2 result = {0, 0};
-  if (v == NULL)
-    return result;
-
   double magnitude = KVector2Norm(v);
   if (magnitude < 0.000001) {
     return result;
   }
 
-  result.x = v->x / magnitude;
-  result.y = v->y / magnitude;
+  result.x = v.x / magnitude;
+  result.y = v.y / magnitude;
 
   return result;
 }
 
-KVector2 KVector2ScalarProduct(double scalar, KVector2 *v) {
+KVector2 KVector2ScalarProduct(double scalar, KVector2 v) {
   KVector2 result = {0, 0};
-  if (v == NULL)
-    return result;
 
-  result.x = v->x * scalar;
-  result.y = v->y * scalar;
+  result.x = v.x * scalar;
+  result.y = v.y * scalar;
 
   return result;
 }
 
-double KVector2DotProduct(KVector2 *v1, KVector2 *v2) {
-  if (v1 == NULL || v2 == NULL)
-    return 0.0;
-
-  return v1->x * v2->x + v1->y * v2->y;
+double KVector2DotProduct(KVector2 v1, KVector2 v2) {
+  return v1.x * v2.x + v1.y * v2.y;
 }
 
-KVector2 KVector2Addition(KVector2 *v1, KVector2 *v2) {
+KVector2 KVector2Addition(KVector2 v1, KVector2 v2) {
   KVector2 result = {0, 0};
-  if (v1 == NULL || v2 == NULL)
-    return result;
-
-  result.x = v1->x + v2->x;
-  result.y = v1->y + v2->y;
+  result.x = v1.x + v2.x;
+  result.y = v1.y + v2.y;
 
   return result;
 }
 
-KVector2 KVector2Subtraction(KVector2 *v1, KVector2 *v2) {
+KVector2 KVector2Subtraction(KVector2 v1, KVector2 v2) {
   KVector2 result = {0, 0};
-  if (v1 == NULL || v2 == NULL)
-    return result;
-
-  result.x = v1->x - v2->x;
-  result.y = v1->y - v2->y;
+  result.x = v1.x - v2.x;
+  result.y = v1.y - v2.y;
 
   return result;
 }
@@ -89,92 +70,74 @@ KVector2 KVector2Subtraction(KVector2 *v1, KVector2 *v2) {
  * KVector3 Operations Implementation
  */
 
-double KVector3Norm(KVector3 *v) {
-  if (v == NULL)
-    return 0.0;
-  return sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+double KVector3Norm(KVector3 v) {
+  return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
-KVector3 KVector3Negate(KVector3 *v) {
+KVector3 KVector3Negate(KVector3 v) {
   KVector3 result = {0, 0, 0};
-  if (v == NULL)
-    return result;
 
-  result.x = -v->x;
-  result.y = -v->y;
-  result.z = -v->z;
+  result.x = -v.x;
+  result.y = -v.y;
+  result.z = -v.z;
 
   return result;
 }
 
-KVector3 KVector3Unit(KVector3 *v) {
+KVector3 KVector3Unit(KVector3 v) {
   KVector3 result = {0, 0, 0};
-  if (v == NULL)
-    return result;
-
   double magnitude = KVector3Norm(v);
   if (magnitude < 0.000001) {
     return result;
   }
 
-  result.x = v->x / magnitude;
-  result.y = v->y / magnitude;
-  result.z = v->z / magnitude;
+  result.x = v.x / magnitude;
+  result.y = v.y / magnitude;
+  result.z = v.z / magnitude;
 
   return result;
 }
 
-KVector3 KVector3ScalarProduct(double scalar, KVector3 *v) {
+KVector3 KVector3ScalarProduct(double scalar, KVector3 v) {
   KVector3 result = {0, 0, 0};
-  if (v == NULL)
-    return result;
 
-  result.x = v->x * scalar;
-  result.y = v->y * scalar;
-  result.z = v->z * scalar;
+  result.x = v.x * scalar;
+  result.y = v.y * scalar;
+  result.z = v.z * scalar;
 
   return result;
 }
 
-double KVector3DotProduct(KVector3 *v1, KVector3 *v2) {
-  if (v1 == NULL || v2 == NULL)
-    return 0.0;
-
-  return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
+double KVector3DotProduct(KVector3 v1, KVector3 v2) {
+  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
-KVector3 KVector3CrossProduct(KVector3 *v1, KVector3 *v2) {
+KVector3 KVector3CrossProduct(KVector3 v1, KVector3 v2) {
   KVector3 result = {0, 0, 0};
-  if (v1 == NULL || v2 == NULL)
-    return result;
 
-  result.x = v1->y * v2->z - v1->z * v2->y;
-  result.y = v1->z * v2->x - v1->x * v2->z;
-  result.z = v1->x * v2->y - v1->y * v2->x;
+  result.x = v1.y * v2.z - v1.z * v2.y;
+  result.y = v1.z * v2.x - v1.x * v2.z;
+  result.z = v1.x * v2.y - v1.y * v2.x;
 
   return result;
 }
 
-KVector3 KVector3Addition(KVector3 *v1, KVector3 *v2) {
+KVector3 KVector3Addition(KVector3 v1, KVector3 v2) {
   KVector3 result = {0, 0, 0};
-  if (v1 == NULL || v2 == NULL)
-    return result;
 
-  result.x = v1->x + v2->x;
-  result.y = v1->y + v2->y;
-  result.z = v1->z + v2->z;
+  result.x = v1.x + v2.x;
+  result.y = v1.y + v2.y;
+  result.z = v1.z + v2.z;
 
   return result;
 }
 
-KVector3 KVector3Subtraction(KVector3 *v1, KVector3 *v2) {
+KVector3 KVector3Subtraction(KVector3 v1, KVector3 v2) {
   KVector3 result = {0, 0, 0};
-  if (v1 == NULL || v2 == NULL)
-    return result;
 
-  result.x = v1->x - v2->x;
-  result.y = v1->y - v2->y;
-  result.z = v1->z - v2->z;
+  result.x = v1.x - v2.x;
+  result.y = v1.y - v2.y;
+  result.z = v1.z - v2.z;
 
   return result;
 }
@@ -183,10 +146,8 @@ KVector3 KVector3Subtraction(KVector3 *v1, KVector3 *v2) {
  * KQuaternion Operations Implementation
  */
 
-KQuaternion KQuaternionFromAxisAngle(KVector3 *axis, double angle) {
+KQuaternion KQuaternionFromAxisAngle(KVector3 axis, double angle) {
   KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
-  if (axis == NULL)
-    return result;
 
   KVector3 normalized = KVector3Unit(axis);
   double halfAngle = angle / 2.0;
@@ -200,33 +161,29 @@ KQuaternion KQuaternionFromAxisAngle(KVector3 *axis, double angle) {
   return result;
 }
 
-KQuaternion KQuaternionMultiply(KQuaternion *q1, KQuaternion *q2) {
+KQuaternion KQuaternionMultiply(KQuaternion q1, KQuaternion q2) {
   KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
-  if (q1 == NULL || q2 == NULL)
-    return result;
 
-  result.w = q1->w * q2->w - q1->x * q2->x - q1->y * q2->y - q1->z * q2->z;
-  result.x = q1->w * q2->x + q1->x * q2->w + q1->y * q2->z - q1->z * q2->y;
-  result.y = q1->w * q2->y - q1->x * q2->z + q1->y * q2->w + q1->z * q2->x;
-  result.z = q1->w * q2->z + q1->x * q2->y - q1->y * q2->x + q1->z * q2->w;
+  result.w = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
+  result.x = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
+  result.y = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
+  result.z = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
 
   return result;
 }
 
-Matrix3x3 KQuaternionToMatrix3(KQuaternion *q) {
+Matrix3x3 KQuaternionToMatrix3(KQuaternion q) {
   Matrix3x3 result = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}}; // Identity matrix
-  if (q == NULL)
-    return result;
 
-  double xx = q->x * q->x;
-  double yy = q->y * q->y;
-  double zz = q->z * q->z;
-  double xy = q->x * q->y;
-  double xz = q->x * q->z;
-  double yz = q->y * q->z;
-  double wx = q->w * q->x;
-  double wy = q->w * q->y;
-  double wz = q->w * q->z;
+  double xx = q.x * q.x;
+  double yy = q.y * q.y;
+  double zz = q.z * q.z;
+  double xy = q.x * q.y;
+  double xz = q.x * q.z;
+  double yz = q.y * q.z;
+  double wx = q.w * q.x;
+  double wy = q.w * q.y;
+  double wz = q.w * q.z;
 
   result.m[0][0] = 1.0 - 2.0 * (yy + zz);
   result.m[0][1] = 2.0 * (xy - wz);
@@ -243,22 +200,19 @@ Matrix3x3 KQuaternionToMatrix3(KQuaternion *q) {
   return result;
 }
 
-Matrix4x4 KQuaternionToMatrix4(KQuaternion *q) {
+Matrix4x4 KQuaternionToMatrix4(KQuaternion q) {
   // Initialize identity matrix
   Matrix4x4 result = {{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}};
 
-  if (q == NULL)
-    return result;
-
-  double xx = q->x * q->x;
-  double yy = q->y * q->y;
-  double zz = q->z * q->z;
-  double xy = q->x * q->y;
-  double xz = q->x * q->z;
-  double yz = q->y * q->z;
-  double wx = q->w * q->x;
-  double wy = q->w * q->y;
-  double wz = q->w * q->z;
+  double xx = q.x * q.x;
+  double yy = q.y * q.y;
+  double zz = q.z * q.z;
+  double xy = q.x * q.y;
+  double xz = q.x * q.z;
+  double yz = q.y * q.z;
+  double wx = q.w * q.x;
+  double wy = q.w * q.y;
+  double wz = q.w * q.z;
 
   result.m[0][0] = 1.0 - 2.0 * (yy + zz);
   result.m[0][1] = 2.0 * (xy - wz);
@@ -275,21 +229,19 @@ Matrix4x4 KQuaternionToMatrix4(KQuaternion *q) {
   return result;
 }
 
-KQuaternion KQuaternionUnit(KQuaternion *q) {
+KQuaternion KQuaternionUnit(KQuaternion q) {
   KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
-  if (q == NULL)
-    return result;
 
   double magnitude =
-      sqrt(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+      sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
   if (magnitude < 0.000001) { // Avoid division by zero
     return result;
   }
 
-  result.x = q->x / magnitude;
-  result.y = q->y / magnitude;
-  result.z = q->z / magnitude;
-  result.w = q->w / magnitude;
+  result.x = q.x / magnitude;
+  result.y = q.y / magnitude;
+  result.z = q.z / magnitude;
+  result.w = q.w / magnitude;
 
   return result;
 }

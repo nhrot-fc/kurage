@@ -52,34 +52,34 @@ typedef struct {
 /**
  * Basic KVector2 operations
  */
-double KVector2Magnitude(KVector2 *v);
-KVector2 KVector2Inversion(KVector2 *v);
-KVector2 KVector2Normalization(KVector2 *v);
-KVector2 KVector2ScalarProduct(double scalar, KVector2 *v);
-double KVector2DotProduct(KVector2 *v1, KVector2 *v2);
-KVector2 KVector2Addition(KVector2 *v1, KVector2 *v2);
-KVector2 KVector2Subtraction(KVector2 *v1, KVector2 *v2);
+double KVector2Magnitude(KVector2 v);
+KVector2 KVector2Inversion(KVector2 v);
+KVector2 KVector2Normalization(KVector2 v);
+KVector2 KVector2ScalarProduct(double scalar, KVector2 v);
+double KVector2DotProduct(KVector2 v1, KVector2 v2);
+KVector2 KVector2Addition(KVector2 v1, KVector2 v2);
+KVector2 KVector2Subtraction(KVector2 v1, KVector2 v2);
 
 /**
  * Basic KVector3 operations
  */
-double KVector3Magnitude(KVector3 *v);
-KVector3 KVector3Inversion(KVector3 *v);
-KVector3 KVector3Normalization(KVector3 *v);
-KVector3 KVector3ScalarProduct(double scalar, KVector3 *v);
-double KVector3DotProduct(KVector3 *v1, KVector3 *v2);
-KVector3 KVector3CrossProduct(KVector3 *v1, KVector3 *v2);
-KVector3 KVector3Addition(KVector3 *v1, KVector3 *v2);
-KVector3 KVector3Subtraction(KVector3 *v1, KVector3 *v2);
+double KVector3Magnitude(KVector3 v);
+KVector3 KVector3Inversion(KVector3 v);
+KVector3 KVector3Normalization(KVector3 v);
+KVector3 KVector3ScalarProduct(double scalar, KVector3 v);
+double KVector3DotProduct(KVector3 v1, KVector3 v2);
+KVector3 KVector3CrossProduct(KVector3 v1, KVector3 v2);
+KVector3 KVector3Addition(KVector3 v1, KVector3 v2);
+KVector3 KVector3Subtraction(KVector3 v1, KVector3 v2);
 
 /**
  * Basic KQuaternion operations
  */
-KQuaternion KQuaternionFromAxisAngle(KVector3 *axis, double angle);
-KQuaternion KQuaternionMultiply(KQuaternion *q1, KQuaternion *q2);
-Matrix3x3 KQuaternionToMatrix3(KQuaternion *q);
-Matrix4x4 KQuaternionToMatrix4(KQuaternion *q);
-KQuaternion KQuaternionNormalize(KQuaternion *q);
+KQuaternion KQuaternionFromAxisAngle(KVector3 axis, double angle);
+KQuaternion KQuaternionMultiply(KQuaternion q1, KQuaternion q2);
+Matrix3x3 KQuaternionToMatrix3(KQuaternion q);
+Matrix4x4 KQuaternionToMatrix4(KQuaternion q);
+KQuaternion KQuaternionNormalize(KQuaternion q);
 
 /**
  * Utility functions
