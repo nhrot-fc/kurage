@@ -374,5 +374,10 @@ EntityID ParticleCreate(Universe *universe, KVector2 position,
     return INVALID_ENTITY;
   }
 
+  // For Verlet integration, set previous position based on initial velocity
+  // previous = position - velocity * dt
+  universe->kineticBodies[entity].previous.x = position.x - velocity.x * DELTA_TIME;
+  universe->kineticBodies[entity].previous.y = position.y - velocity.y * DELTA_TIME;
+
   return entity;
 }
