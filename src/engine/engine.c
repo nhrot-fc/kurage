@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 /* Universe Management */
-// const static KVector2 ZERO_VECTOR = {0.0, 0.0};
 const static KVector2 GRAVITY_VECTOR = {GRAVITY_X, GRAVITY_Y};
 
 Universe *UniverseCreate(uint32_t maxEntities) {
