@@ -70,7 +70,7 @@ void kurage_update(void) {
       lastHeight = currentHeight;
     }
 
-    float deltaTime = 12 * GetFrameTime();
+    float deltaTime = 8 * GetFrameTime();
 
     UniverseUpdate(state->universe, deltaTime);
   }
