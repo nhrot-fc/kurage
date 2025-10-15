@@ -220,12 +220,15 @@ void PhysicsForcesUpdate(Universe *universe) {
          (COMPONENT_PARTICLE | COMPONENT_MECHANICS)) ==
             (COMPONENT_PARTICLE | COMPONENT_MECHANICS)) {
 
-      // Apply gravity
-      PhysicsApplyForce(
-          universe, i,
-          (KVector2){GRAVITY_VECTOR.x / universe->kineticBodies[i].inverseMass,
-                     GRAVITY_VECTOR.y /
-                         universe->kineticBodies[i].inverseMass});
+      // Skip entities with infinite mass (inverseMass <= 0)
+      if (universe->kineticBodies[i].inverseMass > 0) {
+        // Apply gravity
+        PhysicsApplyForce(
+            universe, i,
+            (KVector2){GRAVITY_VECTOR.x / universe->kineticBodies[i].inverseMass,
+                       GRAVITY_VECTOR.y /
+                           universe->kineticBodies[i].inverseMass});
+      }
     }
   }
 }
