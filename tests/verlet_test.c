@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
 #include "../src/engine/engine.h"
 
 #define EPSILON 0.001
+#define DELTA_TIME 0.1
 
 int test_verlet_integration() {
     // Create a universe
@@ -39,7 +39,7 @@ int test_verlet_integration() {
     
     // Apply no gravity for this test - just let it move with initial velocity
     // Do one integration step
-    PhysicsIntegrateForces(universe, DELTA_TIME);
+    UniverseUpdate(universe, DELTA_TIME);
     
     printf("After 1 step position: (%.2f, %.2f)\n", body->position.x, body->position.y);
     printf("After 1 step velocity: (%.2f, %.2f)\n", mech->velocity.x, mech->velocity.y);
@@ -103,8 +103,7 @@ int test_verlet_with_constant_force() {
     KineticBodyComponent *body = UniverseGetKineticBodyComponent(universe, particle);
     
     // Do one integration step
-    PhysicsIntegrateForces(universe, DELTA_TIME);
-    
+    UniverseUpdate(universe, DELTA_TIME);
     // With constant force F=10, mass=1, acceleration a=10
     // For Verlet from rest: new_pos = 2*current - prev + a*dt*dt
     // Since current = prev initially: new_pos = current + a*dt*dt = 0 + 10*0.1*0.1 = 0.1

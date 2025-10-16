@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
 #include "../src/engine/engine.h"
 
 #define EPSILON 0.01
+#define DELTA_TIME 0.1
 
 // Test that simulates a simple drop with gravity
 int main(void) {
@@ -27,11 +27,10 @@ int main(void) {
     // Apply gravity for several steps and check position
     for (int step = 0; step < 5; step++) {
         // Apply gravity
-        KVector2 gravity = {0, GRAVITY};
-        PhysicsApplyGravity(universe, gravity);
+        PhysicsApplyForce(universe, particle, GRAVITY_VECTOR);
         
         // Integrate
-        PhysicsIntegrateForces(universe, DELTA_TIME);
+        UniverseUpdate(universe, DELTA_TIME);
         
         KineticBodyComponent *body = UniverseGetKineticBodyComponent(universe, particle);
         MechanicsComponent *mech = UniverseGetMechanicsComponent(universe, particle);
@@ -52,7 +51,7 @@ int main(void) {
     MechanicsComponent *mech = UniverseGetMechanicsComponent(universe, particle);
     
     // Verify velocity is correct (should match analytical: v = g*t)
-    double expected_vel = GRAVITY * (5 * DELTA_TIME);
+    double expected_vel = KVector2Norm(GRAVITY_VECTOR) * (5 * DELTA_TIME);
     
     printf("\nExpected velocity: %.3f\n", expected_vel);
     printf("Actual velocity: %.3f\n", mech->velocity.y);

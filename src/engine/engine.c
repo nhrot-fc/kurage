@@ -9,9 +9,6 @@
 #include "engine.h"
 #include <stdlib.h>
 
-/* Universe Management */
-const static KVector2 GRAVITY_VECTOR = {GRAVITY_X, GRAVITY_Y};
-
 Universe *UniverseCreate(uint32_t maxEntities) {
   Universe *universe = (Universe *)malloc(sizeof(Universe));
   if (!universe)
@@ -65,7 +62,6 @@ void UniverseUpdate(Universe *universe, double deltaTime) {
   if (!universe)
     return;
 
-  PhysicsForcesUpdate(universe);
   PhysicsMechanicsUpdate(universe, deltaTime);
   PhysicsPositionUpdate(universe, deltaTime);
   PhysicsClearForces(universe);
@@ -161,8 +157,8 @@ bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
 
 /* Component Access */
 
-KineticBodyComponent *UniverseGetParticleComponent(Universe *universe,
-                                                   EntityID entity) {
+KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,
+                                                      EntityID entity) {
   if (!universe || entity >= universe->maxEntities ||
       !universe->activeEntities[entity])
     return NULL;
@@ -221,12 +217,7 @@ void PhysicsForcesUpdate(Universe *universe) {
 
       // Skip entities with infinite mass (inverseMass <= 0)
       if (universe->kineticBodies[i].inverseMass > 0) {
-        // Apply gravity
-        PhysicsApplyForce(
-            universe, i,
-            (KVector2){GRAVITY_VECTOR.x / universe->kineticBodies[i].inverseMass,
-                       GRAVITY_VECTOR.y /
-                           universe->kineticBodies[i].inverseMass});
+        // TODO: APPLY FIELD FORCES HERE
       }
     }
   }
@@ -376,10 +367,9 @@ EntityID ParticleCreate(Universe *universe, KVector2 position,
     return INVALID_ENTITY;
   }
 
-  // For Verlet integration, set previous position based on initial velocity
-  // previous = position - velocity * dt
-  universe->kineticBodies[entity].previous.x = position.x - velocity.x * DELTA_TIME;
-  universe->kineticBodies[entity].previous.y = position.y - velocity.y * DELTA_TIME;
+  // For Verlet integration, set previous position to initial position
+  universe->kineticBodies[entity].previous.x = position.x;
+  universe->kineticBodies[entity].previous.y = position.y;
 
   return entity;
 }
