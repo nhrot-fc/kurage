@@ -31,8 +31,7 @@ void kurage_init(void) {
 
   // Initialize universe
   init_universe();
-  if (state)
-    state->paused = false;
+  state->paused = false;
 }
 
 KurageState *kurage_pre_reload(void) {
@@ -132,7 +131,7 @@ static void init_universe(void) {
 
       double radius = 5.0 + ((double)rand() / (double)RAND_MAX) * 10.0;
       double density = 1.0;
-      double mass = radius * density;
+      double mass = M_PI * radius * radius * density;
       EntityID entity = UniverseCreateEntity(state->universe);
       if (entity != INVALID_ENTITY) {
         UniverseAddParticleComponent(state->universe, entity, radius, density);

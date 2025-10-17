@@ -79,7 +79,7 @@ KQuaternion KQuaternionFromAxisAngle(KVector3 axis, double angle);
 KQuaternion KQuaternionMultiply(KQuaternion q1, KQuaternion q2);
 Matrix3x3 KQuaternionToMatrix3(KQuaternion q);
 Matrix4x4 KQuaternionToMatrix4(KQuaternion q);
-KQuaternion KQuaternionNormalize(KQuaternion q);
+KQuaternion KQuaternionUnit(KQuaternion q);
 
 /**
  * Utility functions

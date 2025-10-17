@@ -103,8 +103,8 @@ static bool GridEnsureCapacity(GridCell *cell, uint32_t required) {
   return true;
 }
 
-static bool UniverseComputeCell(const Universe *universe, KVector2 position,
-                                uint32_t *cellX, uint32_t *cellY) {
+static bool UniverseGetCell(const Universe *universe, KVector2 position,
+                            uint32_t *cellX, uint32_t *cellY) {
   if (!universe || !universe->grid.cells || universe->grid.columns == 0 ||
       universe->grid.rows == 0)
     return false;
@@ -364,8 +364,8 @@ void UniverseUpdateSpatialGrid(Universe *universe) {
 
     uint32_t cellX = 0;
     uint32_t cellY = 0;
-    if (!UniverseComputeCell(universe, universe->kineticBodies[i].position,
-                             &cellX, &cellY))
+    if (!UniverseGetCell(universe, universe->kineticBodies[i].position, &cellX,
+                         &cellY))
       continue;
 
     GridCell *cell =
@@ -375,43 +375,6 @@ void UniverseUpdateSpatialGrid(Universe *universe) {
 
     cell->entities[cell->count++] = i;
   }
-}
-
-bool UniverseGetCellCoords(const Universe *universe, KVector2 position,
-                           uint32_t *cellX, uint32_t *cellY) {
-  return UniverseComputeCell(universe, position, cellX, cellY);
-}
-
-size_t UniverseGetCellNeighbors(const Universe *universe, uint32_t cellX,
-                                uint32_t cellY, EntityID *outEntities,
-                                size_t maxEntities) {
-  if (!universe || !universe->grid.cells || universe->grid.columns == 0 ||
-      universe->grid.rows == 0 || !outEntities || maxEntities == 0)
-    return 0;
-
-  if (cellX >= universe->grid.columns || cellY >= universe->grid.rows)
-    return 0;
-
-  size_t written = 0;
-  uint32_t minX = (cellX == 0) ? 0 : cellX - 1;
-  uint32_t minY = (cellY == 0) ? 0 : cellY - 1;
-  uint32_t maxX = (cellX + 1 >= universe->grid.columns)
-                      ? universe->grid.columns - 1
-                      : cellX + 1;
-  uint32_t maxY =
-      (cellY + 1 >= universe->grid.rows) ? universe->grid.rows - 1 : cellY + 1;
-
-  for (uint32_t y = minY; y <= maxY && written < maxEntities; y++) {
-    for (uint32_t x = minX; x <= maxX && written < maxEntities; x++) {
-      const GridCell *cell =
-          &universe->grid.cells[GridIndex(&universe->grid, x, y)];
-      for (uint32_t i = 0; i < cell->count && written < maxEntities; i++) {
-        outEntities[written++] = cell->entities[i];
-      }
-    }
-  }
-
-  return written;
 }
 
 size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
@@ -426,7 +389,7 @@ size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
 
   uint32_t centerX = 0;
   uint32_t centerY = 0;
-  if (!UniverseComputeCell(universe, position, &centerX, &centerY))
+  if (!UniverseGetCell(universe, position, &centerX, &centerY))
     return 0;
 
   double searchRadius = (radius > 0.0) ? radius : 0.0;

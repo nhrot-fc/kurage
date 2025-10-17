@@ -18,9 +18,13 @@ int test_verlet_integration() {
   KVector2 initial_vel = {10.0, 0.0};
   double mass = 1.0;
 
-  EntityID particle = ParticleCreate(universe, initial_pos, initial_vel, mass,
-                                     OBJECT_RADIUS, 1.0, 0.2);
-  if (particle == INVALID_ENTITY) {
+  EntityID particle = UniverseCreateEntity(universe);
+  if (particle != INVALID_ENTITY) {
+    UniverseAddParticleComponent(universe, particle, OBJECT_RADIUS, 1.0);
+    UniverseAddKineticBodyComponent(universe, particle, initial_pos, mass);
+    UniverseAddMechanicsComponent(universe, particle, initial_vel,
+                                  (KVector2){0.0, 0.0});
+  } else {
     fprintf(stderr, "Failed to create particle\n");
     UniverseDestroy(universe);
     return 1;
@@ -94,9 +98,13 @@ int test_verlet_with_constant_force() {
   KVector2 initial_vel = {0.0, 0.0};
   double mass = 1.0;
 
-  EntityID particle = ParticleCreate(universe, initial_pos, initial_vel, mass,
-                                     OBJECT_RADIUS, 1.0, 0.2);
-  if (particle == INVALID_ENTITY) {
+  EntityID particle = UniverseCreateEntity(universe);
+  if (particle != INVALID_ENTITY) {
+    UniverseAddParticleComponent(universe, particle, OBJECT_RADIUS, 1.0);
+    UniverseAddKineticBodyComponent(universe, particle, initial_pos, mass);
+    UniverseAddMechanicsComponent(universe, particle, initial_vel,
+                                  (KVector2){0.0, 0.0});
+  } else {
     fprintf(stderr, "Failed to create particle\n");
     UniverseDestroy(universe);
     return 1;
@@ -144,9 +152,9 @@ int main(void) {
   result |= test_verlet_with_constant_force();
 
   if (result == 0) {
-    printf("\nAll Verlet integration tests passed!\n");
+    printf("\n[VERLET] Tests PASSED!\n");
   } else {
-    printf("\nSome tests failed!\n");
+    printf("\n[VERLET] Some tests FAILED!\n");
   }
 
   return result;

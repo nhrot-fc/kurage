@@ -16,12 +16,10 @@ void UniverseUpdate(Universe *universe, double deltaTime) {
     PhysicsPositionUpdate(universe, stepDelta);
     PhysicsClearForces(universe);
 
-  UniverseUpdateSpatialGrid(universe);
-  PhysicsResolveParticleCollisions(universe, stepDelta);
+    UniverseUpdateSpatialGrid(universe);
+    PhysicsResolveParticleCollisions(universe, stepDelta);
 
     if (universe->boundary.enabled)
       PhysicsResolveBoundaryCollisions(universe);
-
-    UniverseUpdateSpatialGrid(universe);
   }
 }

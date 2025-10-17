@@ -32,17 +32,17 @@ void PhysicsForcesUpdate(Universe *universe) {
         (universe->entityMasks[i] & required) != required)
       continue;
 
-    KineticBodyComponent *body = &universe->kineticBodies[i];
-    MechanicsComponent *mechanics = &universe->mechanics[i];
+    // KineticBodyComponent *body = &universe->kineticBodies[i];
+    // MechanicsComponent *mechanics = &universe->mechanics[i];
 
-    double inverseMass = body->inverseMass;
-    if (inverseMass <= 0.0)
-      continue;
+    // double inverseMass = body->inverseMass;
+    // if (inverseMass <= 0.0)
+    //   continue;
 
-    double mass = 1.0 / inverseMass;
-    KVector2 gravityForce = KVector2ScalarProduct(GRAVITY_VECTOR, mass);
-    mechanics->forceAccum =
-        KVector2Addition(mechanics->forceAccum, gravityForce);
+    // double mass = 1.0 / inverseMass;
+    // KVector2 gravityForce = KVector2ScalarProduct(GRAVITY_VECTOR, mass);
+    // mechanics->forceAccum =
+    //     KVector2Addition(mechanics->forceAccum, gravityForce);
   }
 }
 

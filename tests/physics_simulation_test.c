@@ -21,9 +21,12 @@ int main(void) {
   // Create a particle at (0, 0) with no initial velocity
   KVector2 pos = {0.0, 0.0};
   KVector2 vel = {0.0, 0.0};
-  EntityID particle =
-      ParticleCreate(universe, pos, vel, 1.0, OBJECT_RADIUS, 1.0, 0.2);
-
+  EntityID particle = UniverseCreateEntity(universe);
+  if (particle != INVALID_ENTITY) {
+    UniverseAddParticleComponent(universe, particle, OBJECT_RADIUS, 1.0);
+    UniverseAddKineticBodyComponent(universe, particle, pos, 1.0);
+    UniverseAddMechanicsComponent(universe, particle, vel, (KVector2){0.0, 0.0});
+  }
   printf("Testing particle drop with gravity...\n");
   printf("Initial position: (%.3f, %.3f)\n", pos.x, pos.y);
 

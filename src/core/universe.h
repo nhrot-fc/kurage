@@ -64,11 +64,6 @@ MechanicsComponent *UniverseGetMechanicsComponent(Universe *universe,
 void UniverseSetBoundaries(Universe *universe, int windowWidth,
                            int windowHeight, float padding, bool enabled);
 void UniverseUpdateSpatialGrid(Universe *universe);
-bool UniverseGetCellCoords(const Universe *universe, KVector2 position,
-                           uint32_t *cellX, uint32_t *cellY);
-size_t UniverseGetCellNeighbors(const Universe *universe, uint32_t cellX,
-                                uint32_t cellY, EntityID *outEntities,
-                                size_t maxEntities);
 size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
                               double radius, EntityID *outEntities,
                               size_t maxEntities);
