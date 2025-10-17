@@ -11,9 +11,8 @@
 
 #include "../../lib/raylib/src/raylib.h"
 #include "../config/config.h"
-#include "engine.h"
-#include "kurage.h"
-#include "kurage_math.h"
+#include "../engine/engine.h"
+#include "plugin.h"
 
 // Global state to be preserved between reloads
 static KurageState *state = NULL;
