@@ -1,7 +1,7 @@
 #ifndef KURAGE_H
 #define KURAGE_H
 
-#include "../engine/engine.h"
+#include "../core/engine.h"
 
 /**
  * State structure to hold the engine's state for hot reloading

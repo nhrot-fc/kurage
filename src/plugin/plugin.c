@@ -11,7 +11,7 @@
 
 #include "../../lib/raylib/src/raylib.h"
 #include "../config/config.h"
-#include "../engine/engine.h"
+#include "../render/draw.h"
 #include "plugin.h"
 
 // Global state to be preserved between reloads
@@ -60,9 +60,8 @@ void kurage_update(void) {
 
     if (currentWidth != lastWidth || currentHeight != lastHeight) {
       // Window resized, update boundaries
-      float padding = 10.0f;
       UniverseSetBoundaries(state->universe, currentWidth, currentHeight,
-                            padding, true);
+                            BOUNDARY_PADDING, true);
 
       // Update cached dimensions
       lastWidth = currentWidth;
@@ -76,55 +75,10 @@ void kurage_update(void) {
 }
 
 void kurage_render(void) {
-  // Render physics objects
   if (!state || !state->universe)
     return;
 
-  // Draw universe boundaries if they're enabled
-  if (state->universe->boundary.enabled) {
-    Color boundaryColor = ColorAlpha(WHITE, 0.8f); // Semitransparent white
-
-    // Draw rectangle outline for the boundary
-    DrawRectangleLines(
-        (int)state->universe->boundary.left, (int)state->universe->boundary.top,
-        (int)(state->universe->boundary.right - state->universe->boundary.left),
-        (int)(state->universe->boundary.bottom - state->universe->boundary.top),
-        boundaryColor);
-  }
-
-  // Render all particles
-  for (uint32_t i = 0; i < state->universe->maxEntities; i++) {
-    if (state->universe->activeEntities[i] &&
-        (state->universe->entityMasks[i] & COMPONENT_PARTICLE)) {
-
-      KineticBodyComponent *particle = &state->universe->kineticBodies[i];
-
-      // Get velocity for coloring (if mechanics component exists)
-      Color particleColor = WHITE;
-      if (state->universe->entityMasks[i] & COMPONENT_MECHANICS) {
-        MechanicsComponent *mechanics = &state->universe->mechanics[i];
-        double speed = sqrt(mechanics->velocity.x * mechanics->velocity.x +
-                            mechanics->velocity.y * mechanics->velocity.y);
-
-        // Color based on speed (blue=slow, white=medium, red=fast)
-        if (speed > 100) {
-          particleColor = RED;
-        } else if (speed > 50) {
-          particleColor = ORANGE;
-        } else if (speed > 20) {
-          particleColor = YELLOW;
-        } else if (speed > 10) {
-          particleColor = GREEN;
-        } else {
-          particleColor = BLUE;
-        }
-      }
-
-      // Draw particle
-      DrawCircle((int)particle->position.x, (int)particle->position.y,
-                 OBJECT_RADIUS, particleColor);
-    }
-  }
+  RenderUniverse(state->universe);
 }
 
 // Initialize the physics universe
@@ -139,16 +93,27 @@ static void init_universe(void) {
     // Set universe boundaries based on window size with padding
     int windowWidth = GetScreenWidth();
     int windowHeight = GetScreenHeight();
-    float padding = 10.0f; // 10 pixels padding from screen edge
-    UniverseSetBoundaries(state->universe, windowWidth, windowHeight, padding,
-                          true);
+    UniverseSetBoundaries(state->universe, windowWidth, windowHeight,
+                          BOUNDARY_PADDING, true);
 
     srand(time(NULL));
-    for (int i = 0; i < KURAGE_MAX_ENTITIES; i++) {
-      double x = rand() % (int)state->universe->boundary.right +
-                 state->universe->boundary.left;
-      double y = rand() % (int)state->universe->boundary.bottom +
-                 state->universe->boundary.top;
+    const double left = state->universe->boundary.left;
+    const double right = state->universe->boundary.right;
+    const double top = state->universe->boundary.top;
+    const double bottom = state->universe->boundary.bottom;
+    const double width = right - left;
+    const double height = bottom - top;
+
+    for (uint32_t i = 0; i < state->universe->maxEntities; i++) {
+      double x = left;
+      double y = top;
+
+      if (width > 0.0) {
+        x += ((double)rand() / (double)RAND_MAX) * width;
+      }
+      if (height > 0.0) {
+        y += ((double)rand() / (double)RAND_MAX) * height;
+      }
 
       double velx = rand() % 80 - 40;
       double vely = 0; // rand() % 80 - 40;

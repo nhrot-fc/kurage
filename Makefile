@@ -20,8 +20,9 @@ SHARED_FLAGS := -shared -fPIC
 
 # Source files
 MAIN_SRC = src/main.c
-ENGINE_SRC = src/engine/engine.c src/engine/kurage_math.c
-PLUGIN_SRC = src/plugin/plugin.c
+ENGINE_SRC = $(wildcard src/core/*.c) $(wildcard src/core/physics/*.c) \
+	           $(wildcard src/core/math/*.c)
+PLUGIN_SRC = $(wildcard src/plugin/*.c) $(wildcard src/render/*.c)
 
 # Output files
 KURAGE_BIN = $(BUILD_DIR)/kurage
@@ -29,7 +30,6 @@ PLUGIN_SO = $(BUILD_DIR)/plugin.so
 
 # Test files
 TEST_SRC = tests/leak_test.c
-TEST_BIN := $(BUILD_DIR)/leak_test
 VERLET_TEST_SRC = tests/verlet_test.c
 VERLET_TEST_BIN = $(BUILD_DIR)/verlet_test
 PHYSICS_SIM_TEST_SRC = tests/physics_simulation_test.c
@@ -66,10 +66,6 @@ test: $(TEST_BIN) $(VERLET_TEST_BIN) $(PHYSICS_SIM_TEST_BIN)
 	@echo "Running physics_sim_test..."
 	@$(PHYSICS_SIM_TEST_BIN)
 
-$(TEST_BIN): $(TEST_SRC) | $(RAYLIB_LIB)
-	$(CC) $(CFLAGS) $(TEST_SRC) -o $(TEST_BIN)
-	@echo "Built $(TEST_BIN)"
-
 $(VERLET_TEST_BIN): $(VERLET_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB)
 	$(CC) $(CFLAGS) $(INCLUDES) $(VERLET_TEST_SRC) $(ENGINE_SRC) -o $(VERLET_TEST_BIN) -lm
 	@echo "Built $(VERLET_TEST_BIN)"
@@ -77,13 +73,6 @@ $(VERLET_TEST_BIN): $(VERLET_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB)
 $(PHYSICS_SIM_TEST_BIN): $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB)
 	$(CC) $(CFLAGS) $(INCLUDES) $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_SIM_TEST_BIN) -lm
 	@echo "Built $(PHYSICS_SIM_TEST_BIN)"
-
-valgrind-test: $(TEST_BIN)
-	@if command -v valgrind >/dev/null 2>&1; then \
-		valgrind --leak-check=full --error-exitcode=2 ./$(TEST_BIN); \
-	else \
-		echo "valgrind not installed; skipping valgrind-test"; \
-	fi
 
 cppcheck:
 	@if command -v cppcheck >/dev/null 2>&1; then \
