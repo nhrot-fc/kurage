@@ -2,21 +2,14 @@
 # Kurage Project Makefile
 ##############################################
 
-# Minimal, clear Makefile for Kurage
-# Targets: all, build, reload, test, valgrind-test, cppcheck, run, clean
+# Paths
+BUILD_DIR := build
+LIB_DIR := lib
 
 # Raylib
-LIB_DIR := lib
 RAYLIB_DIR := $(LIB_DIR)/raylib
 RAYLIB_SRC := $(RAYLIB_DIR)/src
 RAYLIB_LIB := $(RAYLIB_SRC)/libraylib.so
-
-# Paths
-BUILD_DIR := build
-BIN := $(BUILD_DIR)/kurage
-ENGINE_SO := $(BUILD_DIR)/libkurage.so
-TEST_BIN := $(BUILD_DIR)/leak_test
-BIN_DIR := $(BUILD_DIR)/bin
 
 # Tools
 CC := gcc
@@ -25,15 +18,18 @@ LDFLAGS := -L./$(RAYLIB_SRC) -lraylib -lm -lpthread -ldl -lrt -lX11
 INCLUDES := -I./$(RAYLIB_SRC) -Isrc
 SHARED_FLAGS := -shared -fPIC
 
-# Output files
-KURAGE_BIN = $(BUILD_DIR)/kurage
-ENGINE_SO = $(BUILD_DIR)/libkurage.so
-
 # Source files
 MAIN_SRC = src/main.c
 ENGINE_SRC = src/engine/engine.c src/engine/kurage_math.c
-KURAGE_SRC = src/engine/kurage.c
+PLUGIN_SRC = src/plugin/plugin.c
+
+# Output files
+KURAGE_BIN = $(BUILD_DIR)/kurage
+PLUGIN_SO = $(BUILD_DIR)/plugin.so
+
+# Test files
 TEST_SRC = tests/leak_test.c
+TEST_BIN := $(BUILD_DIR)/leak_test
 VERLET_TEST_SRC = tests/verlet_test.c
 VERLET_TEST_BIN = $(BUILD_DIR)/verlet_test
 PHYSICS_SIM_TEST_SRC = tests/physics_simulation_test.c
@@ -47,19 +43,17 @@ all: build
 dirs:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(LIB_DIR)
-	@mkdir -p $(BIN_DIR)
 
 # Build everything (binary + shared lib)
-build: $(BIN) reload
+build: $(KURAGE_BIN) reload
 	@echo "build: done"
 
 # Build main executable
 $(KURAGE_BIN): $(MAIN_SRC) $(RAYLIB_LIB)
 	$(CC) $(CFLAGS) $(INCLUDES) $(MAIN_SRC) -o $(KURAGE_BIN) $(LDFLAGS)
 
-# Build shared engine (hot-reloadable)
-reload: $(ENGINE_SRC) $(KURAGE_SRC) $(RAYLIB_LIB)
-	$(CC) -shared -fPIC $(CFLAGS) $(INCLUDES) $(ENGINE_SRC) $(KURAGE_SRC) -o $(ENGINE_SO) $(LDFLAGS)
+reload: $(ENGINE_SRC) $(PLUGIN_SRC) $(RAYLIB_LIB)
+	$(CC) -shared -fPIC $(CFLAGS) $(INCLUDES) $(ENGINE_SRC) $(PLUGIN_SRC) -o $(PLUGIN_SO) $(LDFLAGS)
 
 # ----------------------
 # Tests & checks

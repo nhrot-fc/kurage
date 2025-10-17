@@ -14,10 +14,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define DELTA_TIME 0.1
 #define GRAVITY_X 0.0
 #define GRAVITY_Y 9.81
 #define RESTITUTION 0.8
+const static KVector2 GRAVITY_VECTOR = {GRAVITY_X, GRAVITY_Y};
 
 /*-----------------------------------------------------------------------------
  * ECS Types and Definitions
@@ -31,11 +31,11 @@ typedef uint32_t EntityID;
  * Boundary structure representing the walls of the universe
  */
 typedef struct {
-    double left;
-    double right;
-    double top;
-    double bottom;
-    bool enabled;
+  double left;
+  double right;
+  double top;
+  double bottom;
+  bool enabled;
 } UniverseBoundary;
 
 /**
@@ -83,7 +83,7 @@ typedef struct {
   /** Component storage - contiguous arrays for cache efficiency */
   KineticBodyComponent *kineticBodies;
   MechanicsComponent *mechanics;
-  
+
   /** Universe boundaries */
   UniverseBoundary boundary;
 } Universe;
@@ -150,7 +150,7 @@ bool UniverseDestroyEntity(Universe *universe, EntityID entity);
  * @return true if successful, false if failed
  */
 bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
-                                  KVector2 position, double mass);
+                                     KVector2 position, double mass);
 
 /**
  * Adds a mechanics component to an entity
@@ -176,7 +176,7 @@ bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
  * @return Pointer to the component, or NULL if entity doesn't have it
  */
 KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,
-                                                EntityID entity);
+                                                      EntityID entity);
 
 /**
  * Gets the mechanics component of an entity
@@ -234,19 +234,19 @@ void PhysicsClearForces(Universe *universe);
 
 /**
  * Sets the universe boundaries based on window dimensions and padding
- * 
+ *
  * @param universe Universe to update boundaries for
  * @param windowWidth Width of the window in pixels
  * @param windowHeight Height of the window in pixels
  * @param padding Distance from window edge to boundary
  * @param enabled Whether boundary collision is enabled
  */
-void UniverseSetBoundaries(Universe *universe, int windowWidth, int windowHeight, 
-                          float padding, bool enabled);
+void UniverseSetBoundaries(Universe *universe, int windowWidth,
+                           int windowHeight, float padding, bool enabled);
 
 /**
  * Resolves boundary collisions for all particles
- * 
+ *
  * @param universe Universe to process
  */
 void PhysicsResolveBoundaryCollisions(Universe *universe);

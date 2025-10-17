@@ -52,9 +52,9 @@ typedef struct {
 /**
  * Basic KVector2 operations
  */
-double KVector2Magnitude(KVector2 v);
-KVector2 KVector2Inversion(KVector2 v);
-KVector2 KVector2Normalization(KVector2 v);
+double KVector2Norm(KVector2 v);
+KVector2 KVector2Negate(KVector2 v);
+KVector2 KVector2Unit(KVector2 v);
 KVector2 KVector2ScalarProduct(double scalar, KVector2 v);
 double KVector2DotProduct(KVector2 v1, KVector2 v2);
 KVector2 KVector2Addition(KVector2 v1, KVector2 v2);
@@ -63,9 +63,9 @@ KVector2 KVector2Subtraction(KVector2 v1, KVector2 v2);
 /**
  * Basic KVector3 operations
  */
-double KVector3Magnitude(KVector3 v);
-KVector3 KVector3Inversion(KVector3 v);
-KVector3 KVector3Normalization(KVector3 v);
+double KVector3Norm(KVector3 v);
+KVector3 KVector3Negate(KVector3 v);
+KVector3 KVector3Unit(KVector3 v);
 KVector3 KVector3ScalarProduct(double scalar, KVector3 v);
 double KVector3DotProduct(KVector3 v1, KVector3 v2);
 KVector3 KVector3CrossProduct(KVector3 v1, KVector3 v2);

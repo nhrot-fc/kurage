@@ -1,10 +1,11 @@
-#include "../lib/raylib/src/raylib.h"
-#include "engine/kurage.h"
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../lib/raylib/src/raylib.h"
+#include "plugin/plugin.h"
 
 // Define function pointer types
 #define X(name, ret, ...) typedef ret (*name##_t)(__VA_ARGS__);
@@ -16,7 +17,7 @@ KURAGE_FUNC_LIST
 KURAGE_FUNC_LIST
 #undef X
 
-const char *engine_lib_name = "build/libkurage.so";
+const char *engine_lib_name = "build/plugin.so";
 void *engine_lib = NULL;
 
 int lib_reload(void) {
