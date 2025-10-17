@@ -37,7 +37,7 @@ KVector2 KVector2Unit(KVector2 v) {
   return result;
 }
 
-KVector2 KVector2ScalarProduct(double scalar, KVector2 v) {
+KVector2 KVector2ScalarProduct(KVector2 v, double scalar) {
   KVector2 result = {0, 0};
 
   result.x = v.x * scalar;
@@ -98,7 +98,7 @@ KVector3 KVector3Unit(KVector3 v) {
   return result;
 }
 
-KVector3 KVector3ScalarProduct(double scalar, KVector3 v) {
+KVector3 KVector3ScalarProduct(KVector3 v, double scalar) {
   KVector3 result = {0, 0, 0};
 
   result.x = v.x * scalar;

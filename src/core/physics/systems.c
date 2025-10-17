@@ -11,8 +11,8 @@ bool PhysicsApplyForce(Universe *universe, EntityID entity, KVector2 force) {
   if ((universe->entityMasks[entity] & required) != required)
     return false;
 
-  universe->mechanics[entity].forceAccum.x += force.x;
-  universe->mechanics[entity].forceAccum.y += force.y;
+  MechanicsComponent *mechanics = &universe->mechanics[entity];
+  mechanics->forceAccum = KVector2Addition(mechanics->forceAccum, force);
   return true;
 }
 
@@ -26,13 +26,17 @@ void PhysicsForcesUpdate(Universe *universe) {
         (universe->entityMasks[i] & required) != required)
       continue;
 
-    double inverseMass = universe->kineticBodies[i].inverseMass;
-    if (inverseMass <= 0.0)
-      continue;
+    // KineticBodyComponent *particle = &universe->kineticBodies[i];
+    // MechanicsComponent *mechanics = &universe->mechanics[i];
+
+    // double inverseMass = particle->inverseMass;
+    // if (inverseMass <= 0.0)
+    //   continue;
 
     // double mass = 1.0 / inverseMass;
-    // universe->mechanics[i].forceAccum.x += mass * GRAVITY_VECTOR.x;
-    // universe->mechanics[i].forceAccum.y += mass * GRAVITY_VECTOR.y;
+    // KVector2 gravityForce = KVector2ScalarProduct(GRAVITY_VECTOR, mass);
+    // mechanics->forceAccum =
+    //     KVector2Addition(mechanics->forceAccum, gravityForce);
   }
 }
 
@@ -46,20 +50,19 @@ void PhysicsMechanicsUpdate(Universe *universe, double deltaTime) {
         (universe->entityMasks[i] & required) != required)
       continue;
 
-    if (universe->kineticBodies[i].inverseMass <= 0)
+    if (universe->kineticBodies[i].inverseMass <= 0.0)
       continue;
 
     KineticBodyComponent *particle = &universe->kineticBodies[i];
     MechanicsComponent *mechanics = &universe->mechanics[i];
 
-    KVector2 acceleration;
-    acceleration.x = mechanics->forceAccum.x * particle->inverseMass;
-    acceleration.y = mechanics->forceAccum.y * particle->inverseMass;
-    acceleration.x += mechanics->acceleration.x;
-    acceleration.y += mechanics->acceleration.y;
+    KVector2 forceAcceleration =
+        KVector2ScalarProduct(mechanics->forceAccum, particle->inverseMass);
+    KVector2 acceleration =
+        KVector2Addition(forceAcceleration, mechanics->acceleration);
 
-    mechanics->velocity.x += acceleration.x * deltaTime;
-    mechanics->velocity.y += acceleration.y * deltaTime;
+    KVector2 velocityDelta = KVector2ScalarProduct(acceleration, deltaTime);
+    mechanics->velocity = KVector2Addition(mechanics->velocity, velocityDelta);
   }
 }
 
@@ -77,8 +80,9 @@ void PhysicsPositionUpdate(Universe *universe, double deltaTime) {
     MechanicsComponent *mechanics = &universe->mechanics[i];
 
     particle->previous = particle->position;
-    particle->position.x += mechanics->velocity.x * deltaTime;
-    particle->position.y += mechanics->velocity.y * deltaTime;
+    KVector2 displacement =
+        KVector2ScalarProduct(mechanics->velocity, deltaTime);
+    particle->position = KVector2Addition(particle->position, displacement);
   }
 }
 
@@ -91,8 +95,8 @@ void PhysicsClearForces(Universe *universe) {
         !(universe->entityMasks[i] & COMPONENT_MECHANICS))
       continue;
 
-    universe->mechanics[i].forceAccum.x = 0.0;
-    universe->mechanics[i].forceAccum.y = 0.0;
+    MechanicsComponent *mechanics = &universe->mechanics[i];
+    mechanics->forceAccum = KVector2ScalarProduct(mechanics->forceAccum, 0.0);
   }
 }
 
@@ -109,19 +113,17 @@ void PhysicsResolveBoundaryCollisions(Universe *universe) {
     KineticBodyComponent *particle = &universe->kineticBodies[i];
     MechanicsComponent *mechanics = &universe->mechanics[i];
 
-    if (particle->position.x < universe->boundary.left) {
-      particle->position.x = universe->boundary.left;
-      mechanics->velocity.x = -mechanics->velocity.x * RESTITUTION;
-    } else if (particle->position.x > universe->boundary.right) {
-      particle->position.x = universe->boundary.right;
+    double clampedX = KClamp(particle->position.x, universe->boundary.left,
+                             universe->boundary.right);
+    if (clampedX != particle->position.x) {
+      particle->position.x = clampedX;
       mechanics->velocity.x = -mechanics->velocity.x * RESTITUTION;
     }
 
-    if (particle->position.y < universe->boundary.top) {
-      particle->position.y = universe->boundary.top;
-      mechanics->velocity.y = -mechanics->velocity.y * RESTITUTION;
-    } else if (particle->position.y > universe->boundary.bottom) {
-      particle->position.y = universe->boundary.bottom;
+    double clampedY = KClamp(particle->position.y, universe->boundary.top,
+                             universe->boundary.bottom);
+    if (clampedY != particle->position.y) {
+      particle->position.y = clampedY;
       mechanics->velocity.y = -mechanics->velocity.y * RESTITUTION;
     }
   }
