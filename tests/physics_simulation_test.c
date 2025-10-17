@@ -5,10 +5,10 @@
 
 #define EPSILON 0.01
 #define DELTA_TIME 0.1
-static const KVector2 GRAVITY_VECTOR = {GRAVITY_X, GRAVITY_Y};
 
 // Test that simulates a simple drop with gravity
 int main(void) {
+    KVector2 gravity = {GRAVITY_X, GRAVITY_Y};
     Universe *universe = UniverseCreate(10);
     if (!universe) {
         fprintf(stderr, "Failed to create universe\n");
@@ -29,7 +29,7 @@ int main(void) {
     // Apply gravity for several steps and check position
     for (int step = 0; step < 5; step++) {
         // Apply gravity
-        PhysicsApplyForce(universe, particle, GRAVITY_VECTOR);
+        PhysicsApplyForce(universe, particle, gravity);
         
         // Integrate
         UniverseUpdate(universe, DELTA_TIME);
@@ -53,7 +53,7 @@ int main(void) {
     MechanicsComponent *mech = UniverseGetMechanicsComponent(universe, particle);
     
     // Verify velocity is correct (should match analytical: v = g*t)
-    double expected_vel = KVector2Norm(GRAVITY_VECTOR) * (5 * DELTA_TIME);
+    double expected_vel = KVector2Norm(gravity) * (5 * DELTA_TIME);
     
     printf("\nExpected velocity: %.3f\n", expected_vel);
     printf("Actual velocity: %.3f\n", mech->velocity.y);
