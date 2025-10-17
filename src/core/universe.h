@@ -50,8 +50,7 @@ void UniverseDestroy(Universe *universe);
 EntityID UniverseCreateEntity(Universe *universe);
 bool UniverseDestroyEntity(Universe *universe, EntityID entity);
 bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
-                                  double radius, double density,
-                                  double friction);
+                                  double radius, double density);
 bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
                                      KVector2 position, double mass);
 bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
@@ -64,9 +63,6 @@ MechanicsComponent *UniverseGetMechanicsComponent(Universe *universe,
                                                   EntityID entity);
 void UniverseSetBoundaries(Universe *universe, int windowWidth,
                            int windowHeight, float padding, bool enabled);
-EntityID ParticleCreate(Universe *universe, KVector2 position,
-                        KVector2 velocity, double mass, double radius,
-                        double density, double friction);
 void UniverseUpdateSpatialGrid(Universe *universe);
 bool UniverseGetCellCoords(const Universe *universe, KVector2 position,
                            uint32_t *cellX, uint32_t *cellY);

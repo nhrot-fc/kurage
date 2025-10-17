@@ -73,7 +73,7 @@ void kurage_update(void) {
     }
 
     float deltaTime = 8 * GetFrameTime();
- 
+
     if (!state->paused)
       UniverseUpdate(state->universe, deltaTime);
   }
@@ -133,9 +133,15 @@ static void init_universe(void) {
       double radius = 5.0 + ((double)rand() / (double)RAND_MAX) * 10.0;
       double density = 1.0;
       double mass = radius * density;
-      double friction = 0.2;
-      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){0.0, 0.0},
-                     mass, radius, density, friction);
+      EntityID entity = UniverseCreateEntity(state->universe);
+      if (entity != INVALID_ENTITY) {
+        UniverseAddParticleComponent(state->universe, entity, radius, density);
+        UniverseAddKineticBodyComponent(state->universe, entity,
+                                        (KVector2){x, y}, mass);
+        UniverseAddMechanicsComponent(state->universe, entity,
+                                      (KVector2){0.0, 0.0},
+                                      (KVector2){0.0, 0.0});
+      }
     }
   }
 }

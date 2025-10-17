@@ -22,7 +22,6 @@ typedef struct {
 typedef struct {
 	double radius;
 	double density;
-	double friction;
 } ParticleComponent;
 
 typedef struct {

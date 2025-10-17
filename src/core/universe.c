@@ -248,8 +248,7 @@ bool UniverseDestroyEntity(Universe *universe, EntityID entity) {
 }
 
 bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
-                                  double radius, double density,
-                                  double friction) {
+                                  double radius, double density) {
   if (!universe || entity >= universe->maxEntities ||
       !universe->activeEntities[entity])
     return false;
@@ -257,12 +256,6 @@ bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
   ParticleComponent component = {0};
   component.radius = radius;
   component.density = (density > 0.0) ? density : 1.0;
-
-  if (friction < 0.0)
-    friction = 0.0;
-  if (friction > 1.0)
-    friction = 1.0;
-  component.friction = friction;
 
   universe->particles[entity] = component;
   universe->entityMasks[entity] |= COMPONENT_PARTICLE;
@@ -355,48 +348,6 @@ void UniverseSetBoundaries(Universe *universe, int windowWidth,
     return;
   }
   UniverseUpdateSpatialGrid(universe);
-}
-
-EntityID ParticleCreate(Universe *universe, KVector2 position,
-                        KVector2 velocity, double mass, double radius,
-                        double density, double friction) {
-  EntityID entity = UniverseCreateEntity(universe);
-  if (entity == INVALID_ENTITY)
-    return INVALID_ENTITY;
-
-  if (!UniverseAddParticleComponent(universe, entity, radius, density,
-                                    friction)) {
-    UniverseDestroyEntity(universe, entity);
-    return INVALID_ENTITY;
-  }
-
-  double resolvedMass = mass;
-  if (resolvedMass <= 0.0) {
-    const ParticleComponent *particle = &universe->particles[entity];
-    double effectiveRadius = particle->radius;
-    double area = M_PI * effectiveRadius * effectiveRadius;
-    double computed = area * particle->density;
-    if (computed > 0.0)
-      resolvedMass = computed;
-    else
-      resolvedMass = DEFAULT_MASS;
-  }
-
-  if (!UniverseAddKineticBodyComponent(universe, entity, position,
-                                       resolvedMass)) {
-    UniverseDestroyEntity(universe, entity);
-    return INVALID_ENTITY;
-  }
-
-  if (!UniverseAddMechanicsComponent(universe, entity, velocity,
-                                     (KVector2){0, 0})) {
-    UniverseDestroyEntity(universe, entity);
-    return INVALID_ENTITY;
-  }
-
-  universe->kineticBodies[entity].previous = position;
-
-  return entity;
 }
 
 void UniverseUpdateSpatialGrid(Universe *universe) {
