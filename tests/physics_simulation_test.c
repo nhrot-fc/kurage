@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <math.h>
-#include "../src/engine/engine.h"
+#include "../src/config/config.h"
+#include "../src/core/engine.h"
 
 #define EPSILON 0.01
 #define DELTA_TIME 0.1
+static const KVector2 GRAVITY_VECTOR = {GRAVITY_X, GRAVITY_Y};
 
 // Test that simulates a simple drop with gravity
 int main(void) {

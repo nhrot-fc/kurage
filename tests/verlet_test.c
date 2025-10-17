@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include "../src/engine/engine.h"
+#include "../src/core/engine.h"
 
 #define EPSILON 0.001
 #define DELTA_TIME 0.1
