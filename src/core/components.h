@@ -8,8 +8,9 @@
 
 typedef enum {
 	COMPONENT_NONE = 0,
-	COMPONENT_PARTICLE = 1 << 0,
+	COMPONENT_KINETIC = 1 << 0,
 	COMPONENT_MECHANICS = 1 << 1,
+	COMPONENT_PARTICLE = 1 << 2,
 } ComponentMask;
 
 typedef struct {
@@ -17,6 +18,12 @@ typedef struct {
 	KVector2 previous;
 	double inverseMass;
 } KineticBodyComponent;
+
+typedef struct {
+	double radius;
+	double density;
+	double friction;
+} ParticleComponent;
 
 typedef struct {
 	KVector2 velocity;

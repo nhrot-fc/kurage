@@ -1,6 +1,8 @@
 #ifndef KURAGE_H
 #define KURAGE_H
 
+#include <stdbool.h>
+
 #include "../core/engine.h"
 
 /**
@@ -9,6 +11,7 @@
  */
 typedef struct {
   Universe *universe;
+  bool paused;
   // Add any other state variables that need to be preserved
 } KurageState;
 

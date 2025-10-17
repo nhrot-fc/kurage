@@ -10,7 +10,6 @@
 #include <time.h>
 
 #include "../../lib/raylib/src/raylib.h"
-#include "../config/config.h"
 #include "../render/draw.h"
 #include "plugin.h"
 
@@ -32,6 +31,8 @@ void kurage_init(void) {
 
   // Initialize universe
   init_universe();
+  if (state)
+    state->paused = false;
 }
 
 KurageState *kurage_pre_reload(void) {
@@ -45,8 +46,11 @@ void kurage_post_reload(KurageState *preserved_state) {
 }
 
 void kurage_logic(void) {
-  // Handle any physics engine logic here
-  // For example, detecting user input for physics objects
+  if (!state || !state->universe)
+    return;
+
+  if (IsKeyPressed(KEY_SPACE))
+    state->paused = !state->paused;
 }
 
 void kurage_update(void) {
@@ -68,9 +72,10 @@ void kurage_update(void) {
       lastHeight = currentHeight;
     }
 
-    float deltaTime = 8 * GetFrameTime();
-
-    UniverseUpdate(state->universe, deltaTime);
+    float deltaTime = GetFrameTime();
+ 
+    if (!state->paused)
+      UniverseUpdate(state->universe, deltaTime);
   }
 }
 
@@ -79,6 +84,16 @@ void kurage_render(void) {
     return;
 
   RenderUniverse(state->universe);
+  // RenderUniverseGrid(state->universe);
+
+  if (state->paused) {
+    const char *label = "PAUSADO";
+    int fontSize = 36;
+    int textWidth = MeasureText(label, fontSize);
+    int x = (GetScreenWidth() - textWidth) / 2;
+    int y = GetScreenHeight() / 2 - fontSize / 2;
+    DrawText(label, x, y, fontSize, YELLOW);
+  }
 }
 
 // Initialize the physics universe
@@ -115,11 +130,12 @@ static void init_universe(void) {
         y += ((double)rand() / (double)RAND_MAX) * height;
       }
 
-      double velx = rand() % 80 - 40;
-      double vely = 0; // rand() % 80 - 40;
-      double mass = (rand() % 100 + 1) / 100.0;
-      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){velx, vely},
-                     mass);
+      double radius = 10.0 + ((double)rand() / (double)RAND_MAX) * 10.0;
+      double density = 1.0;
+      double mass = radius * density;
+      double friction = 0.2;
+      ParticleCreate(state->universe, (KVector2){x, y}, (KVector2){0.0, 0.0},
+                     mass, radius, density, friction);
     }
   }
 }

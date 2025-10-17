@@ -8,7 +8,7 @@
  */
 
 /* Entity/Simulation limits */
-#define MAX_OBJECTS 100
+#define MAX_OBJECTS 2000
 #define OBJECT_RADIUS 5
 
 /* Physics parameters */
@@ -21,7 +21,7 @@
 #define BOUNDARY_PADDING 10.0f
 
 /* Window defaults (used when the renderer cannot query current size) */
-#define WINDOW_DEFAULT_WIDTH 800
-#define WINDOW_DEFAULT_HEIGHT 600
+#define WINDOW_DEFAULT_WIDTH 1920
+#define WINDOW_DEFAULT_HEIGHT 1080
 
 #endif /* CONFIG_H */

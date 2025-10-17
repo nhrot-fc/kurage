@@ -1,10 +1,9 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "../lib/raylib/src/raylib.h"
+#include "config/config.h"
 #include "plugin/plugin.h"
 
 // Define function pointer types
@@ -47,9 +46,8 @@ int lib_reload(void) {
 }
 
 int main(void) {
-  size_t factor = 100;
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-  InitWindow(factor * 16, factor * 9, "Kurage Physics Engine");
+  InitWindow(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, "Kurage Physics Engine");
   SetTargetFPS(60);
 
   // Load the engine library

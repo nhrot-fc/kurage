@@ -6,5 +6,6 @@
 #include "../core/engine.h"
 
 void RenderUniverse(const Universe *universe);
+void RenderUniverseGrid(const Universe *universe);
 
 #endif /* RENDER_DRAW_H */

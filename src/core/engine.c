@@ -9,6 +9,11 @@ void UniverseUpdate(Universe *universe, double deltaTime) {
   PhysicsPositionUpdate(universe, deltaTime);
   PhysicsClearForces(universe);
 
+  UniverseUpdateSpatialGrid(universe);
+  PhysicsResolveParticleCollisions(universe);
+
   if (universe->boundary.enabled)
     PhysicsResolveBoundaryCollisions(universe);
+
+  UniverseUpdateSpatialGrid(universe);
 }
