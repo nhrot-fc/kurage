@@ -72,7 +72,7 @@ void kurage_update(void) {
       lastHeight = currentHeight;
     }
 
-    float deltaTime = GetFrameTime();
+    float deltaTime = 8 * GetFrameTime();
  
     if (!state->paused)
       UniverseUpdate(state->universe, deltaTime);
@@ -84,7 +84,7 @@ void kurage_render(void) {
     return;
 
   RenderUniverse(state->universe);
-  // RenderUniverseGrid(state->universe);
+  RenderUniverseGrid(state->universe);
 
   if (state->paused) {
     const char *label = "PAUSADO";
@@ -130,7 +130,7 @@ static void init_universe(void) {
         y += ((double)rand() / (double)RAND_MAX) * height;
       }
 
-      double radius = 10.0 + ((double)rand() / (double)RAND_MAX) * 10.0;
+      double radius = 5.0 + ((double)rand() / (double)RAND_MAX) * 10.0;
       double density = 1.0;
       double mass = radius * density;
       double friction = 0.2;

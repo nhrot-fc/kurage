@@ -1,19 +1,27 @@
 #include "engine.h"
 
 void UniverseUpdate(Universe *universe, double deltaTime) {
-  if (!universe)
+  if (!universe || deltaTime <= 0.0)
     return;
 
-  PhysicsForcesUpdate(universe);
-  PhysicsMechanicsUpdate(universe, deltaTime);
-  PhysicsPositionUpdate(universe, deltaTime);
-  PhysicsClearForces(universe);
+  int substeps = PHYSICS_SUBSTEPS;
+  if (substeps < 1)
+    substeps = 1;
+
+  double stepDelta = deltaTime / (double)substeps;
+
+  for (int step = 0; step < substeps; step++) {
+    PhysicsForcesUpdate(universe);
+    PhysicsMechanicsUpdate(universe, stepDelta);
+    PhysicsPositionUpdate(universe, stepDelta);
+    PhysicsClearForces(universe);
 
   UniverseUpdateSpatialGrid(universe);
-  PhysicsResolveParticleCollisions(universe);
+  PhysicsResolveParticleCollisions(universe, stepDelta);
 
-  if (universe->boundary.enabled)
-    PhysicsResolveBoundaryCollisions(universe);
+    if (universe->boundary.enabled)
+      PhysicsResolveBoundaryCollisions(universe);
 
-  UniverseUpdateSpatialGrid(universe);
+    UniverseUpdateSpatialGrid(universe);
+  }
 }

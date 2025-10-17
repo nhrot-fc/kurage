@@ -2,7 +2,9 @@
 
 #include <math.h>
 
-static const size_t COLLISION_MAX_NEIGHBORS = 64;
+static const size_t COLLISION_MAX_NEIGHBORS = 1000;
+static const double COLLISION_BAUMGARTE = 0.01;
+static const double COLLISION_PENETRATION_SLOP = 0.01;
 
 static const KVector2 GRAVITY_VECTOR = {GRAVITY_X, GRAVITY_Y};
 
@@ -104,8 +106,8 @@ void PhysicsClearForces(Universe *universe) {
   }
 }
 
-void PhysicsResolveParticleCollisions(Universe *universe) {
-  if (!universe)
+void PhysicsResolveParticleCollisions(Universe *universe, double deltaTime) {
+  if (!universe || deltaTime <= 0.0)
     return;
 
   const ComponentMask required =
@@ -174,23 +176,35 @@ void PhysicsResolveParticleCollisions(Universe *universe) {
       if (penetration <= 0.0)
         continue;
 
+      double penetrationDepth = penetration - COLLISION_PENETRATION_SLOP;
+      if (penetrationDepth < 0.0)
+        penetrationDepth = 0.0;
+
       double positionFactorA = invMassA / invMassSum;
       double positionFactorB = invMassB / invMassSum;
-      bodyA->position.x -= normal.x * penetration * positionFactorA;
-      bodyA->position.y -= normal.y * penetration * positionFactorA;
-      bodyB->position.x += normal.x * penetration * positionFactorB;
-      bodyB->position.y += normal.y * penetration * positionFactorB;
+      bodyA->position.x -= normal.x * penetrationDepth * positionFactorA;
+      bodyA->position.y -= normal.y * penetrationDepth * positionFactorA;
+      bodyB->position.x += normal.x * penetrationDepth * positionFactorB;
+      bodyB->position.y += normal.y * penetrationDepth * positionFactorB;
 
       KVector2 relativeVelocity = {mechB->velocity.x - mechA->velocity.x,
                                    mechB->velocity.y - mechA->velocity.y};
       double velocityAlongNormal =
           relativeVelocity.x * normal.x + relativeVelocity.y * normal.y;
 
-      if (velocityAlongNormal > 0.0)
+      double biasVelocity =
+          (COLLISION_BAUMGARTE / deltaTime) * penetrationDepth;
+
+      double adjustedRelative = velocityAlongNormal - biasVelocity;
+
+      if (adjustedRelative > 0.0)
         continue;
 
-      double impulseMag = -(1.0 + RESTITUTION) * velocityAlongNormal;
+      double impulseMag = -(1.0 + RESTITUTION) * adjustedRelative;
       impulseMag /= invMassSum;
+
+      if (impulseMag < 0.0)
+        impulseMag = 0.0;
 
       double impulseX = impulseMag * normal.x;
       double impulseY = impulseMag * normal.y;

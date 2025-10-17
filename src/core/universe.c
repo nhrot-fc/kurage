@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define UNIVERSE_DEFAULT_CELL_SIZE ((double)OBJECT_RADIUS * 8.0)
+#define UNIVERSE_DEFAULT_CELL_SIZE (30.0)
 
 static uint32_t GridIndex(const Grid *grid, uint32_t column, uint32_t row) {
   return row * grid->columns + column;
