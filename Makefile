@@ -35,6 +35,14 @@ VERLET_TEST_SRC = tests/verlet_test.c
 VERLET_TEST_BIN = $(BUILD_DIR)/verlet_test
 PHYSICS_SIM_TEST_SRC = tests/physics_simulation_test.c
 PHYSICS_SIM_TEST_BIN = $(BUILD_DIR)/physics_sim_test
+PHYSICS_FORCE_TEST_SRC = tests/physics_force_test.c
+PHYSICS_FORCE_TEST_BIN = $(BUILD_DIR)/physics_force_test
+PHYSICS_MECHANICS_TEST_SRC = tests/physics_mechanics_test.c
+PHYSICS_MECHANICS_TEST_BIN = $(BUILD_DIR)/physics_mechanics_test
+PHYSICS_COLLISION_TEST_SRC = tests/physics_collision_test.c
+PHYSICS_COLLISION_TEST_BIN = $(BUILD_DIR)/physics_collision_test
+PHYSICS_BOUNDARY_TEST_SRC = tests/physics_boundary_test.c
+PHYSICS_BOUNDARY_TEST_BIN = $(BUILD_DIR)/physics_boundary_test
 
 TEST_DEFINES ?=
 
@@ -61,13 +69,23 @@ reload: $(ENGINE_SRC) $(PLUGIN_SRC) $(RAYLIB_LIB)
 # ----------------------
 # Tests & checks
 # ----------------------
-test: $(TEST_BIN) $(VERLET_TEST_BIN) $(PHYSICS_SIM_TEST_BIN)
+test: $(TEST_BIN) $(VERLET_TEST_BIN) $(PHYSICS_SIM_TEST_BIN) \
+      $(PHYSICS_FORCE_TEST_BIN) $(PHYSICS_MECHANICS_TEST_BIN) \
+      $(PHYSICS_COLLISION_TEST_BIN) $(PHYSICS_BOUNDARY_TEST_BIN)
 	@echo "Running leak_test..."
 	@$(TEST_BIN)
 	@echo "Running verlet_test..."
 	@$(VERLET_TEST_BIN)
 	@echo "Running physics_sim_test..."
 	@$(PHYSICS_SIM_TEST_BIN)
+	@echo "Running physics_force_test..."
+	@$(PHYSICS_FORCE_TEST_BIN)
+	@echo "Running physics_mechanics_test..."
+	@$(PHYSICS_MECHANICS_TEST_BIN)
+	@echo "Running physics_collision_test..."
+	@$(PHYSICS_COLLISION_TEST_BIN)
+	@echo "Running physics_boundary_test..."
+	@$(PHYSICS_BOUNDARY_TEST_BIN)
 
 test-debug: TEST_DEFINES += -DTEST_DEBUG
 test-debug: test
@@ -84,6 +102,22 @@ $(VERLET_TEST_BIN): $(VERLET_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
 $(PHYSICS_SIM_TEST_BIN): $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
 	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_SIM_TEST_BIN) -lm
 	@echo "Built $(PHYSICS_SIM_TEST_BIN)"
+
+$(PHYSICS_FORCE_TEST_BIN): $(PHYSICS_FORCE_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(PHYSICS_FORCE_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_FORCE_TEST_BIN) -lm
+	@echo "Built $(PHYSICS_FORCE_TEST_BIN)"
+
+$(PHYSICS_MECHANICS_TEST_BIN): $(PHYSICS_MECHANICS_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(PHYSICS_MECHANICS_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_MECHANICS_TEST_BIN) -lm
+	@echo "Built $(PHYSICS_MECHANICS_TEST_BIN)"
+
+$(PHYSICS_COLLISION_TEST_BIN): $(PHYSICS_COLLISION_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(PHYSICS_COLLISION_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_COLLISION_TEST_BIN) -lm
+	@echo "Built $(PHYSICS_COLLISION_TEST_BIN)"
+
+$(PHYSICS_BOUNDARY_TEST_BIN): $(PHYSICS_BOUNDARY_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(PHYSICS_BOUNDARY_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_BOUNDARY_TEST_BIN) -lm
+	@echo "Built $(PHYSICS_BOUNDARY_TEST_BIN)"
 
 cppcheck:
 	@if command -v cppcheck >/dev/null 2>&1; then \

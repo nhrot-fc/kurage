@@ -3,7 +3,6 @@
 #include <math.h>
 
 static const size_t COLLISION_MAX_NEIGHBORS = 1000;
-static const double COLLISION_BAUMGARTE = 0.01;
 static const double COLLISION_PENETRATION_SLOP = 0.01;
 
 /**
@@ -171,7 +170,8 @@ void PhysicsPositionUpdate(Universe *universe, double deltaTime) {
     if (mechanics->needsVerletSync) {
       double dtSq = deltaTime * deltaTime;
       double halfDtSq = 0.5 * dtSq;
-      KVector2 velocityTerm = KVector2ScalarProduct(mechanics->velocity, deltaTime);
+      KVector2 velocityTerm =
+          KVector2ScalarProduct(mechanics->velocity, deltaTime);
       KVector2 halfAccelerationTerm =
           KVector2ScalarProduct(mechanics->acceleration, halfDtSq);
 
@@ -186,13 +186,11 @@ void PhysicsPositionUpdate(Universe *universe, double deltaTime) {
     KVector2 currentPosition = particle->position;
 
     double dtSq = deltaTime * deltaTime;
-    KVector2 inertiaTerm =
-        KVector2Subtraction(currentPosition, prevPosition);
+    KVector2 inertiaTerm = KVector2Subtraction(currentPosition, prevPosition);
     KVector2 accelerationTerm =
         KVector2ScalarProduct(mechanics->acceleration, dtSq);
 
-    KVector2 newPosition =
-        KVector2Addition(currentPosition, inertiaTerm);
+    KVector2 newPosition = KVector2Addition(currentPosition, inertiaTerm);
     newPosition = KVector2Addition(newPosition, accelerationTerm);
 
     particle->previous = currentPosition;
@@ -200,8 +198,7 @@ void PhysicsPositionUpdate(Universe *universe, double deltaTime) {
 
     KVector2 velocityDelta =
         KVector2ScalarProduct(mechanics->acceleration, deltaTime);
-    mechanics->velocity =
-        KVector2Addition(mechanics->velocity, velocityDelta);
+    mechanics->velocity = KVector2Addition(mechanics->velocity, velocityDelta);
   }
 }
 
@@ -227,7 +224,7 @@ void PhysicsClearForces(Universe *universe) {
  * Resolves particle contacts using positional correction
  * Δx = penetrationDepth * inverseMass / (inverseMassA + inverseMassB)
  * and impulse magnitude
- * j = -(1 + e) * (v_rel·n - bias) / (inverseMassA + inverseMassB).
+ * j = (-(1 + e) * (v_rel·n) + bias) / (inverseMassA + inverseMassB).
  */
 void PhysicsResolveParticleCollisions(Universe *universe, double deltaTime) {
   if (!universe || deltaTime <= 0.0)
@@ -315,19 +312,17 @@ void PhysicsResolveParticleCollisions(Universe *universe, double deltaTime) {
       double velocityAlongNormal =
           relativeVelocity.x * normal.x + relativeVelocity.y * normal.y;
 
-      double biasVelocity =
-          (COLLISION_BAUMGARTE / deltaTime) * penetrationDepth;
+      double biasVelocity = 0.0;
 
-      double adjustedRelative = velocityAlongNormal - biasVelocity;
-
-      if (adjustedRelative > 0.0)
+      if (velocityAlongNormal > 0.0 && penetrationDepth <= 0.0)
         continue;
 
-      double impulseMag = -(1.0 + RESTITUTION) * adjustedRelative;
+      double impulseMag = -(2.0) * velocityAlongNormal;
+      impulseMag -= biasVelocity;
       impulseMag /= invMassSum;
 
-      if (impulseMag < 0.0)
-        impulseMag = 0.0;
+      if (impulseMag <= 0.0)
+        continue;
 
       double impulseX = impulseMag * normal.x;
       double impulseY = impulseMag * normal.y;

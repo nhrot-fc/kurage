@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "universe.h"
 
 void UniverseUpdate(Universe *universe, double deltaTime) {
   if (!universe || deltaTime <= 0.0)
@@ -22,4 +23,5 @@ void UniverseUpdate(Universe *universe, double deltaTime) {
     if (universe->boundary.enabled)
       PhysicsResolveBoundaryCollisions(universe);
   }
+  // UniverseInformation(universe);
 }

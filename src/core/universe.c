@@ -1,6 +1,7 @@
 #include "universe.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define UNIVERSE_DEFAULT_CELL_SIZE (30.0)
@@ -436,4 +437,42 @@ size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
   }
 
   return written;
+}
+
+void UniverseInformation(const Universe *universe) {
+  if (!universe)
+    return;
+
+  printf("Universe State:\n");
+  printf("Boundary: left=%.2f, right=%.2f, top=%.2f, bottom=%.2f, enabled=%s\n",
+         universe->boundary.left, universe->boundary.right,
+         universe->boundary.top, universe->boundary.bottom,
+         universe->boundary.enabled ? "true" : "false");
+  printf("Grid: cellSize=%.2f, columns=%u, rows=%u\n", universe->grid.cellSize,
+         universe->grid.columns, universe->grid.rows);
+  printf("Entity Count: %u / %u\n", universe->entityCount,
+         universe->maxEntities);
+  // print entity details
+  for (uint32_t i = 0; i < universe->maxEntities; i++) {
+    if (!universe->activeEntities[i]) {
+      continue;
+    }
+    printf("Entity %u: Mask=0x%X\n", i, universe->entityMasks[i]);
+    if (universe->entityMasks[i] & COMPONENT_PARTICLE) {
+      ParticleComponent *particle = &universe->particles[i];
+      printf("  Particle: radius=%.2f, density=%.2f\n", particle->radius,
+             particle->density);
+    }
+    if (universe->entityMasks[i] & COMPONENT_KINETIC) {
+      KineticBodyComponent *body = &universe->kineticBodies[i];
+      printf("  KineticBody: position=(%.2f, %.2f), inverseMass=%.4f\n",
+             body->position.x, body->position.y, body->inverseMass);
+    }
+    if (universe->entityMasks[i] & COMPONENT_MECHANICS) {
+      MechanicsComponent *mech = &universe->mechanics[i];
+      printf("  Mechanics: velocity=(%.2f, %.2f), acceleration=(%.2f, %.2f), forceAccum=(%.2f, %.2f), constantForces=(%.2f, %.2f)\n",
+             mech->velocity.x, mech->velocity.y, mech->acceleration.x,
+             mech->acceleration.y, mech->forceAccum.x, mech->forceAccum.y, mech->constantForces.x, mech->constantForces.y);
+    }
+  }
 }

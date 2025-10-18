@@ -67,5 +67,5 @@ void UniverseUpdateSpatialGrid(Universe *universe);
 size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
                               double radius, EntityID *outEntities,
                               size_t maxEntities);
-
+void UniverseInformation(const Universe *universe);
 #endif /* ECS_UNIVERSE_H */

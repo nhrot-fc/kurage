@@ -129,17 +129,21 @@ static void init_universe(void) {
         y += ((double)rand() / (double)RAND_MAX) * height;
       }
 
-      double radius = 5.0 + ((double)rand() / (double)RAND_MAX) * 10.0;
+      double radius = 15.0; // + ((double)rand() / (double)RAND_MAX) * 10.0;
       double density = 1.0;
       double mass = M_PI * radius * radius * density;
+      double vel_x = -10.0 + ((double)rand() / (double)RAND_MAX) * 20.0;
+      double vel_y = -10.0 + ((double)rand() / (double)RAND_MAX) * 20.0;
+      KVector2 velocity = {vel_x, vel_y};
+      KVector2 position = {x, y};
       EntityID entity = UniverseCreateEntity(state->universe);
       if (entity != INVALID_ENTITY) {
         UniverseAddParticleComponent(state->universe, entity, radius, density);
-        UniverseAddKineticBodyComponent(state->universe, entity,
-                                        (KVector2){x, y}, mass);
-        UniverseAddMechanicsComponent(state->universe, entity,
-                                      (KVector2){0.0, 0.0});
+        UniverseAddKineticBodyComponent(state->universe, entity, position,
+                                        mass);
+        UniverseAddMechanicsComponent(state->universe, entity, velocity);
       }
+      PhysicsApplyConstantForce(state->universe, entity, (KVector2){GRAVITY_X * mass, GRAVITY_Y * mass});
     }
   }
 }
