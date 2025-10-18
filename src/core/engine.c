@@ -5,4 +5,6 @@ void UniverseUpdate(Universe *universe, double deltaTime) {
     return;
   }
 
+  MechanicsPositionUpdate(universe, deltaTime);
+  MechanicsBoundaryCollisionUpdate(universe);
 }

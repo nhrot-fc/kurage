@@ -12,9 +12,7 @@
 /**
  * KVector2 Operations Implementation
  */
-double KVector2Norm(KVector2 v) {
-  return sqrt(v.x * v.x + v.y * v.y);
-}
+double KVector2Norm(KVector2 v) { return sqrt(v.x * v.x + v.y * v.y); }
 
 KVector2 KVector2Negate(KVector2 v) {
   KVector2 result = {0, 0};
@@ -37,7 +35,7 @@ KVector2 KVector2Unit(KVector2 v) {
   return result;
 }
 
-KVector2 KVector2ScalarProduct(KVector2 v, double scalar) {
+KVector2 KVector2Scale(KVector2 v, double scalar) {
   KVector2 result = {0, 0};
 
   result.x = v.x * scalar;
@@ -50,7 +48,7 @@ double KVector2DotProduct(KVector2 v1, KVector2 v2) {
   return v1.x * v2.x + v1.y * v2.y;
 }
 
-KVector2 KVector2Addition(KVector2 v1, KVector2 v2) {
+KVector2 KVector2Add(KVector2 v1, KVector2 v2) {
   KVector2 result = {0, 0};
   result.x = v1.x + v2.x;
   result.y = v1.y + v2.y;
@@ -58,7 +56,7 @@ KVector2 KVector2Addition(KVector2 v1, KVector2 v2) {
   return result;
 }
 
-KVector2 KVector2Subtraction(KVector2 v1, KVector2 v2) {
+KVector2 KVector2Sub(KVector2 v1, KVector2 v2) {
   KVector2 result = {0, 0};
   result.x = v1.x - v2.x;
   result.y = v1.y - v2.y;
@@ -98,7 +96,7 @@ KVector3 KVector3Unit(KVector3 v) {
   return result;
 }
 
-KVector3 KVector3ScalarProduct(KVector3 v, double scalar) {
+KVector3 KVector3Scale(KVector3 v, double scalar) {
   KVector3 result = {0, 0, 0};
 
   result.x = v.x * scalar;
@@ -122,7 +120,7 @@ KVector3 KVector3CrossProduct(KVector3 v1, KVector3 v2) {
   return result;
 }
 
-KVector3 KVector3Addition(KVector3 v1, KVector3 v2) {
+KVector3 KVector3Add(KVector3 v1, KVector3 v2) {
   KVector3 result = {0, 0, 0};
 
   result.x = v1.x + v2.x;
@@ -132,7 +130,7 @@ KVector3 KVector3Addition(KVector3 v1, KVector3 v2) {
   return result;
 }
 
-KVector3 KVector3Subtraction(KVector3 v1, KVector3 v2) {
+KVector3 KVector3Sub(KVector3 v1, KVector3 v2) {
   KVector3 result = {0, 0, 0};
 
   result.x = v1.x - v2.x;
@@ -232,8 +230,7 @@ Matrix4x4 KQuaternionToMatrix4(KQuaternion q) {
 KQuaternion KQuaternionUnit(KQuaternion q) {
   KQuaternion result = {0, 0, 0, 1}; // Default to identity quaternion
 
-  double magnitude =
-      sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+  double magnitude = sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
   if (magnitude < 0.000001) { // Avoid division by zero
     return result;
   }

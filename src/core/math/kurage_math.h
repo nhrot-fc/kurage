@@ -55,10 +55,10 @@ typedef struct {
 double KVector2Norm(KVector2 v);
 KVector2 KVector2Negate(KVector2 v);
 KVector2 KVector2Unit(KVector2 v);
-KVector2 KVector2ScalarProduct(KVector2 v, double scalar);
+KVector2 KVector2Scale(KVector2 v, double scalar);
 double KVector2DotProduct(KVector2 v1, KVector2 v2);
-KVector2 KVector2Addition(KVector2 v1, KVector2 v2);
-KVector2 KVector2Subtraction(KVector2 v1, KVector2 v2);
+KVector2 KVector2Add(KVector2 v1, KVector2 v2);
+KVector2 KVector2Sub(KVector2 v1, KVector2 v2);
 
 /**
  * Basic KVector3 operations
@@ -66,11 +66,11 @@ KVector2 KVector2Subtraction(KVector2 v1, KVector2 v2);
 double KVector3Norm(KVector3 v);
 KVector3 KVector3Negate(KVector3 v);
 KVector3 KVector3Unit(KVector3 v);
-KVector3 KVector3ScalarProduct(KVector3 v, double scalar);
+KVector3 KVector3Scale(KVector3 v, double scalar);
 double KVector3DotProduct(KVector3 v1, KVector3 v2);
 KVector3 KVector3CrossProduct(KVector3 v1, KVector3 v2);
-KVector3 KVector3Addition(KVector3 v1, KVector3 v2);
-KVector3 KVector3Subtraction(KVector3 v1, KVector3 v2);
+KVector3 KVector3Add(KVector3 v1, KVector3 v2);
+KVector3 KVector3Sub(KVector3 v1, KVector3 v2);
 
 /**
  * Basic KQuaternion operations

@@ -1,9 +1,11 @@
-#ifndef PHYSICS_SYSTEMS_H
-#define PHYSICS_SYSTEMS_H
+#ifndef PHYSICS_MECHANICS_H
+#define PHYSICS_MECHANICS_H
 
 #include <stdbool.h>
 
 #include "../universe.h"
 
+bool MechanicsPositionUpdate(Universe *universe, double deltaTime);
+bool MechanicsBoundaryCollisionUpdate(Universe *universe);
 
-#endif /* PHYSICS_SYSTEMS_H */
+#endif /* PHYSICS_MECHANICS_H */
