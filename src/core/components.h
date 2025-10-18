@@ -26,8 +26,10 @@ typedef struct {
 
 typedef struct {
 	KVector2 velocity;
-	KVector2 acceleration;
 	KVector2 forceAccum;
+	KVector2 constantForces;
+	KVector2 acceleration;
+	bool needsVerletSync;
 } MechanicsComponent;
 
 #endif /* ECS_COMPONENTS_H */

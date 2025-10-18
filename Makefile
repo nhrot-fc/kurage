@@ -30,10 +30,13 @@ PLUGIN_SO = $(BUILD_DIR)/plugin.so
 
 # Test files
 TEST_SRC = tests/leak_test.c
+TEST_BIN = $(BUILD_DIR)/leak_test
 VERLET_TEST_SRC = tests/verlet_test.c
 VERLET_TEST_BIN = $(BUILD_DIR)/verlet_test
 PHYSICS_SIM_TEST_SRC = tests/physics_simulation_test.c
 PHYSICS_SIM_TEST_BIN = $(BUILD_DIR)/physics_sim_test
+
+TEST_DEFINES ?=
 
 .PHONY: all build reload test valgrind-test cppcheck check run clean dirs
 
@@ -66,12 +69,20 @@ test: $(TEST_BIN) $(VERLET_TEST_BIN) $(PHYSICS_SIM_TEST_BIN)
 	@echo "Running physics_sim_test..."
 	@$(PHYSICS_SIM_TEST_BIN)
 
-$(VERLET_TEST_BIN): $(VERLET_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB)
-	$(CC) $(CFLAGS) $(INCLUDES) $(VERLET_TEST_SRC) $(ENGINE_SRC) -o $(VERLET_TEST_BIN) -lm
+test-debug: TEST_DEFINES += -DTEST_DEBUG
+test-debug: test
+
+
+$(TEST_BIN): $(TEST_SRC) | dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(TEST_SRC) -o $(TEST_BIN) -lm
+	@echo "Built $(TEST_BIN)"
+
+$(VERLET_TEST_BIN): $(VERLET_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(VERLET_TEST_SRC) $(ENGINE_SRC) -o $(VERLET_TEST_BIN) -lm
 	@echo "Built $(VERLET_TEST_BIN)"
 
-$(PHYSICS_SIM_TEST_BIN): $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB)
-	$(CC) $(CFLAGS) $(INCLUDES) $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_SIM_TEST_BIN) -lm
+$(PHYSICS_SIM_TEST_BIN): $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) | $(RAYLIB_LIB) dirs
+	$(CC) $(CFLAGS) $(TEST_DEFINES) $(INCLUDES) $(PHYSICS_SIM_TEST_SRC) $(ENGINE_SRC) -o $(PHYSICS_SIM_TEST_BIN) -lm
 	@echo "Built $(PHYSICS_SIM_TEST_BIN)"
 
 cppcheck:

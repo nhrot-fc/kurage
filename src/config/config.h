@@ -16,7 +16,7 @@
 #define GRAVITY_Y 9.81
 #define RESTITUTION 0.8
 #define DEFAULT_MASS 1.0
-#define PHYSICS_SUBSTEPS 6
+#define PHYSICS_SUBSTEPS 4
 
 /* Boundary handling */
 #define BOUNDARY_PADDING 10.0f

@@ -294,15 +294,16 @@ bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
 }
 
 bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
-                                   KVector2 velocity, KVector2 acceleration) {
+                                   KVector2 velocity) {
   if (!universe || entity >= universe->maxEntities ||
       !universe->activeEntities[entity])
     return false;
 
   universe->mechanics[entity].velocity = velocity;
-  universe->mechanics[entity].acceleration = acceleration;
-  universe->mechanics[entity].forceAccum.x = 0.0;
-  universe->mechanics[entity].forceAccum.y = 0.0;
+  universe->mechanics[entity].forceAccum = (KVector2){0.0, 0.0};
+  universe->mechanics[entity].constantForces = (KVector2){0.0, 0.0};
+  universe->mechanics[entity].acceleration = (KVector2){0.0, 0.0};
+  universe->mechanics[entity].needsVerletSync = true;
 
   universe->entityMasks[entity] |= COMPONENT_MECHANICS;
   return true;

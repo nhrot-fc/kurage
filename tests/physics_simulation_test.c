@@ -1,13 +1,22 @@
 #include "../src/config/config.h"
 #include "../src/core/engine.h"
 #include <math.h>
+#include <stddef.h>
 #include <stdio.h>
+
+#include "test_framework.h"
 
 #define EPSILON 0.01
 #define DELTA_TIME 0.1
 
-// Test that simulates a simple drop with gravity
-int main(void) {
+int test_particle_drop_with_gravity(void) {
+  // PRECONDICIONES: Universo sin límites con partícula en reposo y gravedad
+  // tomada de la configuración global.
+  // PROCESO: Aplicar fuerza constante igual a la gravedad y avanzar cinco
+  // pasos de integración Verlet.
+  // POSTCONDICIONES: La velocidad final debe coincidir con la solución
+  // analítica v = g * t dentro del umbral EPSILON.
+
   KVector2 gravity = {GRAVITY_X, GRAVITY_Y};
   Universe *universe = UniverseCreate(10);
   if (!universe) {
@@ -15,69 +24,76 @@ int main(void) {
     return 1;
   }
 
-  // Disable boundaries
   universe->boundary.enabled = false;
 
-  // Create a particle at (0, 0) with no initial velocity
   KVector2 pos = {0.0, 0.0};
   KVector2 vel = {0.0, 0.0};
   EntityID particle = UniverseCreateEntity(universe);
   if (particle != INVALID_ENTITY) {
     UniverseAddParticleComponent(universe, particle, OBJECT_RADIUS, 1.0);
     UniverseAddKineticBodyComponent(universe, particle, pos, 1.0);
-    UniverseAddMechanicsComponent(universe, particle, vel, (KVector2){0.0, 0.0});
+    UniverseAddMechanicsComponent(universe, particle, vel);
+  } else {
+    fprintf(stderr, "Failed to create particle\n");
+    UniverseDestroy(universe);
+    return 1;
   }
-  printf("Testing particle drop with gravity...\n");
-  printf("Initial position: (%.3f, %.3f)\n", pos.x, pos.y);
 
-  // Apply gravity for several steps and check position
-  for (int step = 0; step < 5; step++) {
-    // Apply gravity
-    PhysicsApplyForce(universe, particle, gravity);
+  DEBUG_PRINTF("Testing particle drop with gravity...\n");
+  DEBUG_PRINTF("Initial position: (%.3f, %.3f)\n", pos.x, pos.y);
 
-    // Integrate
+  if (!PhysicsApplyConstantForce(universe, particle, gravity)) {
+    fprintf(stderr, "Failed to register constant gravity force\n");
+    UniverseDestroy(universe);
+    return 1;
+  }
+
+  for (int step = 0; step < 5; ++step) {
     UniverseUpdate(universe, DELTA_TIME);
 
-    KineticBodyComponent *body =
+#ifdef TEST_DEBUG
+    KineticBodyComponent *body_debug =
         UniverseGetKineticBodyComponent(universe, particle);
-    MechanicsComponent *mech =
+    MechanicsComponent *mech_debug =
         UniverseGetMechanicsComponent(universe, particle);
 
-    printf("Step %d: pos=(%.3f, %.3f), vel=(%.3f, %.3f)\n", step + 1,
-           body->position.x, body->position.y, mech->velocity.x,
-           mech->velocity.y);
+    DEBUG_PRINTF("Step %d: pos=(%.3f, %.3f), vel=(%.3f, %.3f)\n", step + 1,
+                 body_debug->position.x, body_debug->position.y,
+                 mech_debug->velocity.x, mech_debug->velocity.y);
+#endif
   }
 
-  // With Verlet integration and gravity:
-  // Note: Verlet has a known characteristic where the first step from rest
-  // gives 2x the expected displacement (g*dt^2 vs 0.5*g*dt^2). This is because
-  // prev=pos when at rest. Despite this initial offset, Verlet provides
-  // better long-term stability and energy conservation than Euler.
-  // The velocity is still correctly calculated.
-
-  KineticBodyComponent *body =
-      UniverseGetKineticBodyComponent(universe, particle);
   MechanicsComponent *mech = UniverseGetMechanicsComponent(universe, particle);
-
-  // Verify velocity is correct (should match analytical: v = g*t)
   double expected_vel = KVector2Norm(gravity) * (5 * DELTA_TIME);
 
-  printf("\nExpected velocity: %.3f\n", expected_vel);
-  printf("Actual velocity: %.3f\n", mech->velocity.y);
-  printf("Position: %.3f (has initial offset due to Verlet characteristics)\n",
-         body->position.y);
+#ifdef TEST_DEBUG
+  KineticBodyComponent *body =
+      UniverseGetKineticBodyComponent(universe, particle);
 
-  // Velocity should be exact with Verlet
-  if (fabs(mech->velocity.y - expected_vel) < EPSILON) {
-    printf("\nPhysics test: PASSED ✓\n");
-    printf("Verlet integration is working correctly.\n");
-    printf("Velocity is exact, and the simulation is stable.\n");
-  } else {
-    printf("\nPhysics test: FAILED ✗\n");
+  DEBUG_PRINTF("\nExpected velocity: %.3f\n", expected_vel);
+  DEBUG_PRINTF("Actual velocity: %.3f\n", mech->velocity.y);
+  DEBUG_PRINTF(
+      "Position: %.3f (has initial offset due to Verlet characteristics)\n",
+      body->position.y);
+#endif
+
+  double velocity_delta = fabs(mech->velocity.y - expected_vel);
+  if (velocity_delta >= EPSILON) {
+    fprintf(stderr,
+            "Velocity mismatch: expected %.3f, got %.3f (|delta|=%.3f)\n",
+            expected_vel, mech->velocity.y, velocity_delta);
     UniverseDestroy(universe);
     return 1;
   }
 
   UniverseDestroy(universe);
   return 0;
+}
+
+int main(void) {
+  const TestCase tests[] = {
+      {"test_particle_drop_with_gravity", test_particle_drop_with_gravity},
+  };
+
+  return RUN_TEST_SUITE("PHYSICS", tests);
 }

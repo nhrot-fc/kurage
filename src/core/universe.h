@@ -54,7 +54,7 @@ bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
 bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
                                      KVector2 position, double mass);
 bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
-                                   KVector2 velocity, KVector2 acceleration);
+                                   KVector2 velocity);
 ParticleComponent *UniverseGetParticleComponent(Universe *universe,
                                                 EntityID entity);
 KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,

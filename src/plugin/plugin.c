@@ -83,7 +83,7 @@ void kurage_render(void) {
     return;
 
   RenderUniverse(state->universe);
-  RenderUniverseGrid(state->universe);
+  //RenderUniverseGrid(state->universe);
 
   if (state->paused) {
     const char *label = "PAUSADO";
@@ -138,7 +138,6 @@ static void init_universe(void) {
         UniverseAddKineticBodyComponent(state->universe, entity,
                                         (KVector2){x, y}, mass);
         UniverseAddMechanicsComponent(state->universe, entity,
-                                      (KVector2){0.0, 0.0},
                                       (KVector2){0.0, 0.0});
       }
     }
