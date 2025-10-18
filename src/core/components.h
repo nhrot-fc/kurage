@@ -7,29 +7,36 @@
 #include "math/kurage_math.h"
 
 typedef enum {
-	COMPONENT_NONE = 0,
-	COMPONENT_KINETIC = 1 << 0,
-	COMPONENT_MECHANICS = 1 << 1,
-	COMPONENT_PARTICLE = 1 << 2,
-} ComponentMask;
+  MASK_NONE = 0,
+  MASK_MECHANIC = 1 << 0,
+  MASK_BODY = 1 << 1,
+  MASK_PARTICLE = 1 << 2,
+} KMask;
+
+/*
+  Kurage Mechanics Component
+  To describe a movable entity by the classics laws of motion
+*/
+typedef struct {
+  KVector2 prev_pos;
+  KVector2 pos;
+  KVector2 vel;
+  KVector2 acc;
+} KMechanic;
+
+/*
+  Kurage Body Component
+  To describe the properties of an tangible entity with mass
+  We store invMass to describe infinitely massive objects
+  NOTE: Default shape is circle or sphere with radius of 1
+*/
+typedef struct {
+  double invMass;
+  double mass;
+} KBody;
 
 typedef struct {
-	KVector2 position;
-	KVector2 previous;
-	double inverseMass;
-} KineticBodyComponent;
-
-typedef struct {
-	double radius;
-	double density;
-} ParticleComponent;
-
-typedef struct {
-	KVector2 velocity;
-	KVector2 forceAccum;
-	KVector2 constantForces;
-	KVector2 acceleration;
-	bool needsVerletSync;
-} MechanicsComponent;
+  double radius;
+} KParticle;
 
 #endif /* ECS_COMPONENTS_H */

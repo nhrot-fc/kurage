@@ -63,8 +63,16 @@ void kurage_update(void) {
 
     if (currentWidth != lastWidth || currentHeight != lastHeight) {
       // Window resized, update boundaries
-      UniverseSetBoundaries(state->universe, currentWidth, currentHeight,
-                            BOUNDARY_PADDING, true);
+      UniverseSetBoundary(
+          state->universe,
+          (UniverseBoundary){
+              .left = 0.0 + BOUNDARY_PADDING,
+              .right = (double)currentWidth - BOUNDARY_PADDING,
+              .top = 0.0 + BOUNDARY_PADDING,
+              .bottom = (double)currentHeight - BOUNDARY_PADDING,
+              .thickness = 1.0,
+              .enabled = true,
+          });
 
       // Update cached dimensions
       lastWidth = currentWidth;
@@ -83,7 +91,7 @@ void kurage_render(void) {
     return;
 
   RenderUniverse(state->universe);
-  //RenderUniverseGrid(state->universe);
+  // RenderUniverseGrid(state->universe);
 
   if (state->paused) {
     const char *label = "PAUSADO";
@@ -93,6 +101,18 @@ void kurage_render(void) {
     int y = GetScreenHeight() / 2 - fontSize / 2;
     DrawText(label, x, y, fontSize, YELLOW);
   }
+}
+
+void kurage_shutdown(void) {
+  if (!state) {
+    return;
+  }
+  if (state->universe) {
+    UniverseDestroy(state->universe);
+    state->universe = NULL;
+  }
+  free(state);
+  state = NULL;
 }
 
 // Initialize the physics universe
@@ -107,8 +127,15 @@ static void init_universe(void) {
     // Set universe boundaries based on window size with padding
     int windowWidth = GetScreenWidth();
     int windowHeight = GetScreenHeight();
-    UniverseSetBoundaries(state->universe, windowWidth, windowHeight,
-                          BOUNDARY_PADDING, true);
+    UniverseSetBoundary(state->universe,
+                        (UniverseBoundary){
+                            .left = 0.0 + BOUNDARY_PADDING,
+                            .right = (double)windowWidth - BOUNDARY_PADDING,
+                            .top = 0.0 + BOUNDARY_PADDING,
+                            .bottom = (double)windowHeight - BOUNDARY_PADDING,
+                            .thickness = 1.0,
+                            .enabled = true,
+                        });
 
     srand(time(NULL));
     const double left = state->universe->boundary.left;
@@ -138,12 +165,23 @@ static void init_universe(void) {
       KVector2 position = {x, y};
       EntityID entity = UniverseCreateEntity(state->universe);
       if (entity != INVALID_ENTITY) {
-        UniverseAddParticleComponent(state->universe, entity, radius, density);
-        UniverseAddKineticBodyComponent(state->universe, entity, position,
-                                        mass);
-        UniverseAddMechanicsComponent(state->universe, entity, velocity);
+        UniverseAddKParticle(state->universe, entity,
+                             (KParticle){
+                                 .radius = radius,
+                             });
+        UniverseAddKMechanic(state->universe, entity,
+                             (KMechanic){
+                                 .pos = position,
+                                 .prev_pos = position,
+                                 .vel = velocity,
+                                 .acc = (KVector2){0.0, 0.0},
+                             });
+        UniverseAddKBody(state->universe, entity,
+                         (KBody){
+                             .invMass = (mass > 0.0) ? 1.0 / mass : 0.0,
+                             .mass = mass,
+                         });
       }
-      PhysicsApplyConstantForce(state->universe, entity, (KVector2){GRAVITY_X * mass, GRAVITY_Y * mass});
     }
   }
 }

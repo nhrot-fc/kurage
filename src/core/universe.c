@@ -1,478 +1,148 @@
 #include "universe.h"
 
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
-
-#define UNIVERSE_DEFAULT_CELL_SIZE (30.0)
-
-static uint32_t GridIndex(const Grid *grid, uint32_t column, uint32_t row) {
-  return row * grid->columns + column;
-}
-
-static void GridFree(Grid *grid) {
-  if (!grid || !grid->cells)
-    return;
-
-  uint32_t total = grid->columns * grid->rows;
-  for (uint32_t i = 0; i < total; i++) {
-    free(grid->cells[i].entities);
-    grid->cells[i].entities = NULL;
-    grid->cells[i].capacity = 0;
-    grid->cells[i].count = 0;
-  }
-
-  free(grid->cells);
-  grid->cells = NULL;
-  grid->columns = 0;
-  grid->rows = 0;
-}
-
-static bool GridAllocate(const UniverseBoundary *boundary, double cellSize,
-                         Grid *outGrid) {
-  if (!outGrid || cellSize <= 0.0)
-    return false;
-
-  double width = boundary->right - boundary->left;
-  double height = boundary->bottom - boundary->top;
-
-  if (width <= 0.0)
-    width = cellSize;
-  if (height <= 0.0)
-    height = cellSize;
-
-  uint32_t columns = (uint32_t)ceil(width / cellSize);
-  uint32_t rows = (uint32_t)ceil(height / cellSize);
-
-  if (columns == 0)
-    columns = 1;
-  if (rows == 0)
-    rows = 1;
-
-  Grid temp = {0};
-  temp.cellSize = cellSize;
-  temp.columns = columns;
-  temp.rows = rows;
-  temp.cells = (GridCell *)calloc(columns * rows, sizeof(GridCell));
-  if (!temp.cells)
-    return false;
-
-  *outGrid = temp;
-  return true;
-}
-
-static bool GridResize(Grid *grid, const UniverseBoundary *boundary) {
-  if (!grid)
-    return false;
-
-  Grid newGrid = {0};
-  newGrid.cellSize = grid->cellSize;
-
-  if (!GridAllocate(boundary, newGrid.cellSize, &newGrid))
-    return false;
-
-  GridFree(grid);
-  *grid = newGrid;
-  return true;
-}
-
-static void GridClear(Grid *grid) {
-  if (!grid || !grid->cells)
-    return;
-
-  uint32_t total = grid->columns * grid->rows;
-  for (uint32_t i = 0; i < total; i++) {
-    grid->cells[i].count = 0;
-  }
-}
-
-static bool GridEnsureCapacity(GridCell *cell, uint32_t required) {
-  if (cell->capacity >= required)
-    return true;
-
-  uint32_t newCapacity = cell->capacity ? cell->capacity : 4;
-  while (newCapacity < required)
-    newCapacity *= 2;
-
-  EntityID *entities =
-      (EntityID *)realloc(cell->entities, newCapacity * sizeof(EntityID));
-  if (!entities)
-    return false;
-
-  cell->entities = entities;
-  cell->capacity = newCapacity;
-  return true;
-}
-
-static bool UniverseGetCell(const Universe *universe, KVector2 position,
-                            uint32_t *cellX, uint32_t *cellY) {
-  if (!universe || !universe->grid.cells || universe->grid.columns == 0 ||
-      universe->grid.rows == 0)
-    return false;
-
-  double left = universe->boundary.left;
-  double right = universe->boundary.right;
-  double top = universe->boundary.top;
-  double bottom = universe->boundary.bottom;
-
-  if (right <= left || bottom <= top)
-    return false;
-
-  double x = position.x;
-  double y = position.y;
-
-  if (x <= left)
-    x = left;
-  else if (x >= right)
-    x = right - 1e-6;
-
-  if (y <= top)
-    y = top;
-  else if (y >= bottom)
-    y = bottom - 1e-6;
-
-  double dx = x - left;
-  double dy = y - top;
-
-  uint32_t column = (uint32_t)(dx / universe->grid.cellSize);
-  uint32_t row = (uint32_t)(dy / universe->grid.cellSize);
-
-  if (column >= universe->grid.columns)
-    column = universe->grid.columns - 1;
-  if (row >= universe->grid.rows)
-    row = universe->grid.rows - 1;
-
-  if (cellX)
-    *cellX = column;
-  if (cellY)
-    *cellY = row;
-  return true;
-}
 
 Universe *UniverseCreate(uint32_t maxEntities) {
   Universe *universe = (Universe *)malloc(sizeof(Universe));
-  if (!universe)
+  if (!universe) {
     return NULL;
+  }
 
   universe->entityCount = 0;
   universe->maxEntities = maxEntities;
+  universe->nextEntityId = 0;
+  universe->freeEntityCount = 0;
 
-  universe->grid.cellSize = UNIVERSE_DEFAULT_CELL_SIZE;
-  universe->grid.columns = 0;
-  universe->grid.rows = 0;
-  universe->grid.cells = NULL;
-
-  universe->entityMasks = NULL;
-  universe->activeEntities = NULL;
-  universe->particles = NULL;
-  universe->kineticBodies = NULL;
-  universe->mechanics = NULL;
-
-  universe->entityMasks =
-      (ComponentMask *)calloc(maxEntities, sizeof(ComponentMask));
+  universe->entityMasks = (KMask *)calloc(maxEntities, sizeof(KMask));
   universe->activeEntities = (bool *)calloc(maxEntities, sizeof(bool));
-  universe->particles =
-      (ParticleComponent *)calloc(maxEntities, sizeof(ParticleComponent));
-  universe->kineticBodies =
-      (KineticBodyComponent *)calloc(maxEntities, sizeof(KineticBodyComponent));
-  universe->mechanics =
-      (MechanicsComponent *)calloc(maxEntities, sizeof(MechanicsComponent));
+  universe->mechanics = (KMechanic *)calloc(maxEntities, sizeof(KMechanic));
+  universe->bodies = (KBody *)calloc(maxEntities, sizeof(KBody));
+  universe->particles = (KParticle *)calloc(maxEntities, sizeof(KParticle));
+  universe->freeEntityStack = (EntityID *)calloc(maxEntities, sizeof(EntityID));
 
   if (!universe->entityMasks || !universe->activeEntities ||
-      !universe->particles || !universe->kineticBodies ||
-      !universe->mechanics) {
+      !universe->mechanics || !universe->bodies || !universe->particles ||
+      !universe->freeEntityStack) {
     UniverseDestroy(universe);
     return NULL;
   }
 
-  universe->boundary.left = BOUNDARY_PADDING;
-  universe->boundary.top = BOUNDARY_PADDING;
-  universe->boundary.right = WINDOW_DEFAULT_WIDTH - BOUNDARY_PADDING;
-  universe->boundary.bottom = WINDOW_DEFAULT_HEIGHT - BOUNDARY_PADDING;
-  universe->boundary.enabled = true;
-
-  if (!GridAllocate(&universe->boundary, universe->grid.cellSize,
-                    &universe->grid)) {
-    UniverseDestroy(universe);
-    return NULL;
+  for (uint32_t i = 0; i < maxEntities; i++) {
+    universe->entityMasks[i] = MASK_NONE;
+    universe->activeEntities[i] = false;
   }
+
+  universe->boundary.enabled = false;
 
   return universe;
 }
 
-void UniverseDestroy(Universe *universe) {
-  if (!universe)
-    return;
-
-  GridFree(&universe->grid);
-
+bool UniverseDestroy(Universe *universe) {
+  if (universe == NULL) {
+    return false;
+  }
   free(universe->entityMasks);
   free(universe->activeEntities);
-  free(universe->particles);
-  free(universe->kineticBodies);
   free(universe->mechanics);
-
+  free(universe->bodies);
+  free(universe->particles);
+  free(universe->freeEntityStack);
+  universe->entityMasks = NULL;
+  universe->activeEntities = NULL;
+  universe->mechanics = NULL;
+  universe->bodies = NULL;
+  universe->particles = NULL;
+  universe->freeEntityStack = NULL;
   free(universe);
+  return true;
+}
+
+bool UniverseSetBoundary(Universe *universe, UniverseBoundary boundary) {
+  if (universe == NULL) {
+    return false;
+  }
+  universe->boundary.enabled = true;
+  universe->boundary = boundary;
+  return true;
+}
+
+bool UniverseUnsetBoundary(Universe *universe) {
+  if (universe == NULL) {
+    return false;
+  }
+  universe->boundary.enabled = false;
+  return true;
 }
 
 EntityID UniverseCreateEntity(Universe *universe) {
-  if (!universe)
+  if (universe == NULL) {
     return INVALID_ENTITY;
-
-  if (universe->entityCount >= universe->maxEntities)
+  }
+  if (universe->entityCount >= universe->maxEntities) {
     return INVALID_ENTITY;
-
-  for (uint32_t i = 0; i < universe->maxEntities; i++) {
-    if (!universe->activeEntities[i]) {
-      universe->activeEntities[i] = true;
-      universe->entityMasks[i] = COMPONENT_NONE;
-      universe->entityCount++;
-      return i;
-    }
   }
 
-  return INVALID_ENTITY;
-}
-
-bool UniverseDestroyEntity(Universe *universe, EntityID entity) {
-  if (!universe || entity >= universe->maxEntities)
-    return false;
-
-  if (!universe->activeEntities[entity])
-    return false;
-
-  universe->activeEntities[entity] = false;
-  universe->entityMasks[entity] = COMPONENT_NONE;
-  universe->particles[entity] = (ParticleComponent){0};
-  universe->entityCount--;
-  return true;
-}
-
-bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
-                                  double radius, double density) {
-  if (!universe || entity >= universe->maxEntities ||
-      !universe->activeEntities[entity])
-    return false;
-
-  ParticleComponent component = {0};
-  component.radius = radius;
-  component.density = (density > 0.0) ? density : 1.0;
-
-  universe->particles[entity] = component;
-  universe->entityMasks[entity] |= COMPONENT_PARTICLE;
-  return true;
-}
-
-ParticleComponent *UniverseGetParticleComponent(Universe *universe,
-                                                EntityID entity) {
-  if (!universe || entity >= universe->maxEntities ||
-      !universe->activeEntities[entity])
-    return NULL;
-
-  if (!(universe->entityMasks[entity] & COMPONENT_PARTICLE))
-    return NULL;
-
-  return &universe->particles[entity];
-}
-
-bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
-                                     KVector2 position, double mass) {
-  if (!universe || entity >= universe->maxEntities ||
-      !universe->activeEntities[entity])
-    return false;
-
-  universe->kineticBodies[entity].position = position;
-  universe->kineticBodies[entity].previous = position;
-
-  if (mass <= 0 || isinf(mass)) {
-    universe->kineticBodies[entity].inverseMass = 0.0;
+  EntityID newId;
+  if (universe->freeEntityCount > 0) {
+    newId = universe->freeEntityStack[--universe->freeEntityCount];
   } else {
-    universe->kineticBodies[entity].inverseMass = 1.0 / mass;
+    if (universe->nextEntityId >= universe->maxEntities) {
+      return INVALID_ENTITY;
+    }
+    newId = universe->nextEntityId++;
   }
 
-  universe->entityMasks[entity] |= COMPONENT_KINETIC;
-  return true;
+  universe->entityCount++;
+  universe->activeEntities[newId] = true;
+  universe->entityMasks[newId] = MASK_NONE;
+  universe->mechanics[newId] = (KMechanic){0};
+  universe->bodies[newId] = (KBody){0};
+  universe->particles[newId] = (KParticle){0};
+  return newId;
 }
 
-bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
-                                   KVector2 velocity) {
-  if (!universe || entity >= universe->maxEntities ||
-      !universe->activeEntities[entity])
+bool UniverseDestroyEntity(Universe *universe, EntityID id) {
+  if (!UniverseIsEntityActive(universe, id)) {
     return false;
+  }
+  universe->activeEntities[id] = false;
+  universe->entityMasks[id] = MASK_NONE;
 
-  universe->mechanics[entity].velocity = velocity;
-  universe->mechanics[entity].forceAccum = (KVector2){0.0, 0.0};
-  universe->mechanics[entity].constantForces = (KVector2){0.0, 0.0};
-  universe->mechanics[entity].acceleration = (KVector2){0.0, 0.0};
-  universe->mechanics[entity].needsVerletSync = true;
-
-  universe->entityMasks[entity] |= COMPONENT_MECHANICS;
+  universe->mechanics[id] = (KMechanic){0};
+  universe->bodies[id] = (KBody){0};
+  universe->particles[id] = (KParticle){0};
+  universe->entityCount--;
+  if (universe->freeEntityCount < universe->maxEntities) {
+    universe->freeEntityStack[universe->freeEntityCount++] = id;
+  }
   return true;
 }
 
-KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,
-                                                      EntityID entity) {
-  if (!universe || entity >= universe->maxEntities ||
-      !universe->activeEntities[entity])
-    return NULL;
-
-  if (!(universe->entityMasks[entity] & COMPONENT_KINETIC))
-    return NULL;
-
-  return &universe->kineticBodies[entity];
+bool UniverseIsEntityActive(const Universe *universe, EntityID id) {
+  return universe != NULL && id < universe->maxEntities &&
+         universe->activeEntities[id];
 }
 
-MechanicsComponent *UniverseGetMechanicsComponent(Universe *universe,
-                                                  EntityID entity) {
-  if (!universe || entity >= universe->maxEntities ||
-      !universe->activeEntities[entity])
-    return NULL;
-
-  if (!(universe->entityMasks[entity] & COMPONENT_MECHANICS))
-    return NULL;
-
-  return &universe->mechanics[entity];
-}
-
-void UniverseSetBoundaries(Universe *universe, int windowWidth,
-                           int windowHeight, float padding, bool enabled) {
-  if (!universe)
-    return;
-
-  universe->boundary.left = padding;
-  universe->boundary.top = padding;
-  universe->boundary.right = windowWidth - padding;
-  universe->boundary.bottom = windowHeight - padding;
-  universe->boundary.enabled = enabled;
-
-  if (!GridResize(&universe->grid, &universe->boundary)) {
-    UniverseUpdateSpatialGrid(universe);
-    return;
-  }
-  UniverseUpdateSpatialGrid(universe);
-}
-
-void UniverseUpdateSpatialGrid(Universe *universe) {
-  if (!universe || !universe->grid.cells)
-    return;
-
-  GridClear(&universe->grid);
-
-  for (uint32_t i = 0; i < universe->maxEntities; i++) {
-    ComponentMask required = COMPONENT_KINETIC | COMPONENT_PARTICLE;
-    if (!universe->activeEntities[i] ||
-        (universe->entityMasks[i] & required) != required)
-      continue;
-
-    uint32_t cellX = 0;
-    uint32_t cellY = 0;
-    if (!UniverseGetCell(universe, universe->kineticBodies[i].position, &cellX,
-                         &cellY))
-      continue;
-
-    GridCell *cell =
-        &universe->grid.cells[GridIndex(&universe->grid, cellX, cellY)];
-    if (!GridEnsureCapacity(cell, cell->count + 1))
-      continue;
-
-    cell->entities[cell->count++] = i;
-  }
-}
-
-size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
-                              double radius, EntityID *outEntities,
-                              size_t maxEntities) {
-  if (!universe || !outEntities || maxEntities == 0)
-    return 0;
-
-  if (!universe->grid.cells || universe->grid.columns == 0 ||
-      universe->grid.rows == 0)
-    return 0;
-
-  uint32_t centerX = 0;
-  uint32_t centerY = 0;
-  if (!UniverseGetCell(universe, position, &centerX, &centerY))
-    return 0;
-
-  double searchRadius = (radius > 0.0) ? radius : 0.0;
-  double cellSize = universe->grid.cellSize;
-  uint32_t range = (uint32_t)ceil(searchRadius / cellSize);
-
-  uint32_t minX = (centerX > range) ? centerX - range : 0;
-  uint32_t minY = (centerY > range) ? centerY - range : 0;
-  uint32_t maxX = centerX + range;
-  uint32_t maxY = centerY + range;
-  if (maxX >= universe->grid.columns)
-    maxX = universe->grid.columns - 1;
-  if (maxY >= universe->grid.rows)
-    maxY = universe->grid.rows - 1;
-
-  size_t written = 0;
-  for (uint32_t y = minY; y <= maxY && written < maxEntities; y++) {
-    for (uint32_t x = minX; x <= maxX && written < maxEntities; x++) {
-      const GridCell *cell =
-          &universe->grid.cells[GridIndex(&universe->grid, x, y)];
-      for (uint32_t i = 0; i < cell->count && written < maxEntities; i++) {
-        EntityID candidate = cell->entities[i];
-        if (candidate >= universe->maxEntities)
-          continue;
-        ComponentMask mask = universe->entityMasks[candidate];
-        ComponentMask required = COMPONENT_KINETIC | COMPONENT_PARTICLE;
-        if ((mask & required) != required)
-          continue;
-
-        const KineticBodyComponent *body = &universe->kineticBodies[candidate];
-        double dx = body->position.x - position.x;
-        double dy = body->position.y - position.y;
-        double distanceSq = dx * dx + dy * dy;
-        double neighborRadius = universe->particles[candidate].radius;
-        double combinedRadius = searchRadius + neighborRadius;
-        if (combinedRadius < 0.0)
-          combinedRadius = 0.0;
-
-        if (distanceSq <= combinedRadius * combinedRadius)
-          outEntities[written++] = candidate;
-      }
-    }
+#define DEFINE_COMPONENT_ACCESSORS(Name, Field, Mask, Type)                    \
+  bool UniverseAdd##Name(Universe *universe, EntityID id, Type component) {    \
+    if (!UniverseIsEntityActive(universe, id)) {                               \
+      return false;                                                            \
+    }                                                                          \
+    universe->Field[id] = component;                                           \
+    universe->entityMasks[id] |= (Mask);                                       \
+    return true;                                                               \
+  }                                                                            \
+  bool UniverseRemove##Name(Universe *universe, EntityID id) {                 \
+    if (!UniverseIsEntityActive(universe, id)) {                               \
+      return false;                                                            \
+    }                                                                          \
+    universe->Field[id] = (Type){0};                                           \
+    universe->entityMasks[id] &= ~(Mask);                                      \
+    return true;                                                               \
   }
 
-  return written;
-}
+DEFINE_COMPONENT_ACCESSORS(KMechanic, mechanics, MASK_MECHANIC, KMechanic)
+DEFINE_COMPONENT_ACCESSORS(KBody, bodies, MASK_BODY, KBody)
+DEFINE_COMPONENT_ACCESSORS(KParticle, particles, MASK_PARTICLE, KParticle)
 
-void UniverseInformation(const Universe *universe) {
-  if (!universe)
-    return;
-
-  printf("Universe State:\n");
-  printf("Boundary: left=%.2f, right=%.2f, top=%.2f, bottom=%.2f, enabled=%s\n",
-         universe->boundary.left, universe->boundary.right,
-         universe->boundary.top, universe->boundary.bottom,
-         universe->boundary.enabled ? "true" : "false");
-  printf("Grid: cellSize=%.2f, columns=%u, rows=%u\n", universe->grid.cellSize,
-         universe->grid.columns, universe->grid.rows);
-  printf("Entity Count: %u / %u\n", universe->entityCount,
-         universe->maxEntities);
-  // print entity details
-  for (uint32_t i = 0; i < universe->maxEntities; i++) {
-    if (!universe->activeEntities[i]) {
-      continue;
-    }
-    printf("Entity %u: Mask=0x%X\n", i, universe->entityMasks[i]);
-    if (universe->entityMasks[i] & COMPONENT_PARTICLE) {
-      ParticleComponent *particle = &universe->particles[i];
-      printf("  Particle: radius=%.2f, density=%.2f\n", particle->radius,
-             particle->density);
-    }
-    if (universe->entityMasks[i] & COMPONENT_KINETIC) {
-      KineticBodyComponent *body = &universe->kineticBodies[i];
-      printf("  KineticBody: position=(%.2f, %.2f), inverseMass=%.4f\n",
-             body->position.x, body->position.y, body->inverseMass);
-    }
-    if (universe->entityMasks[i] & COMPONENT_MECHANICS) {
-      MechanicsComponent *mech = &universe->mechanics[i];
-      printf("  Mechanics: velocity=(%.2f, %.2f), acceleration=(%.2f, %.2f), forceAccum=(%.2f, %.2f), constantForces=(%.2f, %.2f)\n",
-             mech->velocity.x, mech->velocity.y, mech->acceleration.x,
-             mech->acceleration.y, mech->forceAccum.x, mech->forceAccum.y, mech->constantForces.x, mech->constantForces.y);
-    }
-  }
-}
+#undef DEFINE_COMPONENT_ACCESSORS

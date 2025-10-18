@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include "../config/config.h"
-#include "math/kurage_math.h"
 #include "components.h"
 
 typedef uint32_t EntityID;
@@ -17,55 +16,41 @@ typedef struct {
   double right;
   double top;
   double bottom;
+  double thickness;
   bool enabled;
 } UniverseBoundary;
 
 typedef struct {
-  uint32_t count;
-  uint32_t capacity;
-  EntityID *entities;
-} GridCell;
-
-typedef struct {
-  double cellSize;
-  uint32_t columns;
-  uint32_t rows;
-  GridCell *cells;
-} Grid;
-
-typedef struct {
   uint32_t entityCount;
   uint32_t maxEntities;
-  ComponentMask *entityMasks;
+  uint32_t nextEntityId;
+  uint32_t freeEntityCount;
+  KMask *entityMasks;
   bool *activeEntities;
-  ParticleComponent *particles;
-  KineticBodyComponent *kineticBodies;
-  MechanicsComponent *mechanics;
+  KMechanic *mechanics;
+  KBody *bodies;
+  KParticle *particles;
+  EntityID *freeEntityStack;
   UniverseBoundary boundary;
-  Grid grid;
 } Universe;
 
 Universe *UniverseCreate(uint32_t maxEntities);
-void UniverseDestroy(Universe *universe);
+bool UniverseDestroy(Universe *universe);
+bool UniverseSetBoundary(Universe *universe, UniverseBoundary boundary);
+bool UniverseUnsetBoundary(Universe *universe);
+
 EntityID UniverseCreateEntity(Universe *universe);
-bool UniverseDestroyEntity(Universe *universe, EntityID entity);
-bool UniverseAddParticleComponent(Universe *universe, EntityID entity,
-                                  double radius, double density);
-bool UniverseAddKineticBodyComponent(Universe *universe, EntityID entity,
-                                     KVector2 position, double mass);
-bool UniverseAddMechanicsComponent(Universe *universe, EntityID entity,
-                                   KVector2 velocity);
-ParticleComponent *UniverseGetParticleComponent(Universe *universe,
-                                                EntityID entity);
-KineticBodyComponent *UniverseGetKineticBodyComponent(Universe *universe,
-                                                      EntityID entity);
-MechanicsComponent *UniverseGetMechanicsComponent(Universe *universe,
-                                                  EntityID entity);
-void UniverseSetBoundaries(Universe *universe, int windowWidth,
-                           int windowHeight, float padding, bool enabled);
-void UniverseUpdateSpatialGrid(Universe *universe);
-size_t UniverseQueryNeighbors(const Universe *universe, KVector2 position,
-                              double radius, EntityID *outEntities,
-                              size_t maxEntities);
-void UniverseInformation(const Universe *universe);
+bool UniverseDestroyEntity(Universe *universe, EntityID id);
+bool UniverseIsEntityActive(const Universe *universe, EntityID id);
+
+#define DECLARE_COMPONENT_ACCESSORS(Name, Type)                                \
+  bool UniverseAdd##Name(Universe *universe, EntityID id, Type component);     \
+  bool UniverseRemove##Name(Universe *universe, EntityID id)
+
+DECLARE_COMPONENT_ACCESSORS(KMechanic, KMechanic);
+DECLARE_COMPONENT_ACCESSORS(KBody, KBody);
+DECLARE_COMPONENT_ACCESSORS(KParticle, KParticle);
+
+#undef DECLARE_COMPONENT_ACCESSORS
+
 #endif /* ECS_UNIVERSE_H */

@@ -22,10 +22,11 @@ typedef struct {
  */
 #define KURAGE_FUNC_LIST                                                       \
   X(kurage_init, void, void)                                                   \
-  X(kurage_pre_reload, struct KurageState *, void)                                    \
-  X(kurage_post_reload, void, struct KurageState *)                                   \
+  X(kurage_pre_reload, struct KurageState *, void)                             \
+  X(kurage_post_reload, void, struct KurageState *)                            \
   X(kurage_logic, void, void)                                                  \
   X(kurage_update, void, void)                                                 \
-  X(kurage_render, void, void)
+  X(kurage_render, void, void)                                                 \
+  X(kurage_shutdown, void, void)
 
 #endif // KURAGE_H

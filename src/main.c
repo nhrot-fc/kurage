@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include "../lib/raylib/src/raylib.h"
-#include "config/config.h"
 #include "plugin/plugin.h"
 
 // Define function pointer types
@@ -47,7 +46,8 @@ int lib_reload(void) {
 
 int main(void) {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-  InitWindow(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, "Kurage Physics Engine");
+  InitWindow(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT,
+             "Kurage Physics Engine");
   SetTargetFPS(60);
 
   // Load the engine library
@@ -81,6 +81,11 @@ int main(void) {
     EndDrawing();
   }
 
+  kurage_shutdown();
   CloseWindow();
+  if (engine_lib != NULL) {
+    dlclose(engine_lib);
+    engine_lib = NULL;
+  }
   return 0;
 }

@@ -23,12 +23,16 @@ MAIN_SRC = src/main.c
 ENGINE_SRC = $(wildcard src/core/*.c) $(wildcard src/core/physics/*.c) \
 	           $(wildcard src/core/math/*.c)
 PLUGIN_SRC = $(wildcard src/plugin/*.c) $(wildcard src/render/*.c)
+TEST_SRC = $(wildcard tests/*.c)
+TEST_BUILD_DIR := $(BUILD_DIR)/tests
+TEST_BINS := $(patsubst tests/%.c,$(TEST_BUILD_DIR)/%,$(TEST_SRC))
+TEST_LDFLAGS := -lm
 
 # Output files
 KURAGE_BIN = $(BUILD_DIR)/kurage
 PLUGIN_SO = $(BUILD_DIR)/plugin.so
 
-.PHONY: all reload run clean
+.PHONY: all test reload run clean
 
 # Default target
 all: run
@@ -65,3 +69,17 @@ run: reload $(KURAGE_BIN)
 clean:
 	rm -rf $(BUILD_DIR)
 	@echo "clean: done"
+
+# ----------------------
+# Tests
+# ----------------------
+$(TEST_BUILD_DIR)/%: tests/%.c $(ENGINE_SRC)
+	@mkdir -p $(TEST_BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) $< $(ENGINE_SRC) -o $@ $(TEST_LDFLAGS)
+
+test: $(TEST_BINS)
+	@set -e; \
+	for t in $^; do \
+		echo "Running $$t"; \
+		"$$t"; \
+	done
