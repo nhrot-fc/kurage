@@ -1,30 +1,6 @@
 
 #include "mechanics.h"
 
-bool MechanicsPositionUpdate(Universe *universe, double deltaTime) {
-  if (!universe) {
-    return false;
-  }
-
-  for (uint32_t i = 0; i < universe->maxEntities; i++) {
-    if (!universe->activeEntities[i]) {
-      continue;
-    }
-
-    if (!(universe->entityMasks[i] & MASK_MECHANIC)) {
-      continue;
-    }
-
-    KMechanic *mechanic = &universe->mechanics[i];
-
-    mechanic->prev_pos = mechanic->pos;
-    mechanic->pos =
-        KVector2Add(mechanic->pos, KVector2Scale(mechanic->vel, deltaTime));
-  }
-
-  return true;
-}
-
 bool MechanicsBoundaryCollisionUpdate(Universe *universe) {
   if (!universe) {
     return false;
@@ -79,6 +55,70 @@ bool MechanicsBoundaryCollisionUpdate(Universe *universe) {
     if (collided_y) {
       mechanic->vel.y = -mechanic->vel.y;
     }
+  }
+
+  return true;
+}
+
+bool MechanicsApplyForce(Universe *universe, EntityID id, KVector2 force) {
+  if (!universe || !UniverseIsEntityActive(universe, id)) {
+    return false;
+  }
+
+  if (!(universe->entityMasks[id] & MASK_MECHANIC) ||
+      !(universe->entityMasks[id] & MASK_BODY)) {
+    return false;
+  }
+
+  KBody *body = &universe->bodies[id];
+  KMechanic *mechanic = &universe->mechanics[id];
+  KVector2 acceleration = KVector2Scale(force, body->invMass);
+  mechanic->acc = KVector2Add(mechanic->acc, acceleration);
+
+  return true;
+}
+
+bool MechanicsUpdate(Universe *universe, double deltaTime) {
+  if (!universe) {
+    return false;
+  }
+
+  for (uint32_t i = 0; i < universe->maxEntities; i++) {
+    if (!universe->activeEntities[i]) {
+      continue;
+    }
+
+    if (!(universe->entityMasks[i] & MASK_MECHANIC)) {
+      continue;
+    }
+
+    KMechanic *mechanic = &universe->mechanics[i];
+    mechanic->vel =
+        KVector2Add(mechanic->vel, KVector2Scale(mechanic->acc, deltaTime));
+    mechanic->prev_pos = mechanic->pos;
+    mechanic->pos =
+        KVector2Add(mechanic->pos, KVector2Scale(mechanic->vel, deltaTime));
+  }
+
+  return true;
+}
+
+bool MechanicsCleanUp(Universe *universe) {
+  if (!universe) {
+    return false;
+  }
+
+  for (uint32_t i = 0; i < universe->maxEntities; i++) {
+    if (!universe->activeEntities[i]) {
+      continue;
+    }
+
+    if (!(universe->entityMasks[i] & MASK_MECHANIC)) {
+      continue;
+    }
+
+    KMechanic *mechanic = &universe->mechanics[i];
+    mechanic->acc = KVector2Zero();
   }
 
   return true;

@@ -32,10 +32,10 @@ TEST_LDFLAGS := -lm
 KURAGE_BIN = $(BUILD_DIR)/kurage
 PLUGIN_SO = $(BUILD_DIR)/plugin.so
 
-.PHONY: all test reload run clean
+.PHONY: all build clean test reload run
 
 # Default target
-all: run
+all: build
 
 # Build main executable
 $(KURAGE_BIN): $(MAIN_SRC) $(RAYLIB_LIB)
@@ -59,10 +59,13 @@ $(RAYLIB_LIB):
 		cd $(RAYLIB_SRC) && make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED; \
 	fi
 
+build: $(KURAGE_BIN) reload
+	@echo "build: done"
+
 # ----------------------
 # Run / cleanup
 # ----------------------
-run: reload $(KURAGE_BIN)
+run: build
 	@echo "Running $(KURAGE_BIN)"
 	@$(KURAGE_BIN)
 

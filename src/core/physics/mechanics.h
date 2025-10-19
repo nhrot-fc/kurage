@@ -5,7 +5,12 @@
 
 #include "../universe.h"
 
-bool MechanicsPositionUpdate(Universe *universe, double deltaTime);
 bool MechanicsBoundaryCollisionUpdate(Universe *universe);
 
+/*
+    Instant Force application
+*/
+bool MechanicsApplyForce(Universe *universe, EntityID id, KVector2 force);
+bool MechanicsUpdate(Universe *universe, double deltaTime);
+bool MechanicsCleanUp(Universe *universe);
 #endif /* PHYSICS_MECHANICS_H */

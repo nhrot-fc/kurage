@@ -64,6 +64,11 @@ KVector2 KVector2Sub(KVector2 v1, KVector2 v2) {
   return result;
 }
 
+KVector2 KVector2Zero() {
+  KVector2 result = {0, 0};
+  return result;
+}
+
 /**
  * KVector3 Operations Implementation
  */
@@ -137,6 +142,11 @@ KVector3 KVector3Sub(KVector3 v1, KVector3 v2) {
   result.y = v1.y - v2.y;
   result.z = v1.z - v2.z;
 
+  return result;
+}
+
+KVector3 KVector3Zero() {
+  KVector3 result = {0, 0, 0};
   return result;
 }
 

@@ -10,7 +10,6 @@
 
 typedef uint32_t EntityID;
 #define INVALID_ENTITY UINT32_MAX
-
 typedef struct {
   double left;
   double right;
@@ -30,6 +29,7 @@ typedef struct {
   KMechanic *mechanics;
   KBody *bodies;
   KParticle *particles;
+  KField *fields;
   EntityID *freeEntityStack;
   UniverseBoundary boundary;
 } Universe;
@@ -50,6 +50,7 @@ bool UniverseIsEntityActive(const Universe *universe, EntityID id);
 DECLARE_COMPONENT_ACCESSORS(KMechanic, KMechanic);
 DECLARE_COMPONENT_ACCESSORS(KBody, KBody);
 DECLARE_COMPONENT_ACCESSORS(KParticle, KParticle);
+DECLARE_COMPONENT_ACCESSORS(KField, KField);
 
 #undef DECLARE_COMPONENT_ACCESSORS
 

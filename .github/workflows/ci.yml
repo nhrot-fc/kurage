@@ -23,13 +23,8 @@ jobs:
           libwayland-dev libxkbcommon-dev
     - name: Build project
       run: |
-        make -j$(nproc)
-
-    - name: Run cppcheck (Makefile target)
-      run: |
-        make cppcheck || true
+        make build
 
     - name: Run tests (Makefile targets)
       run: |
         make test
-        make valgrind-test || echo "valgrind-test failed or valgrind missing"

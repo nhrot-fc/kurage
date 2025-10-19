@@ -33,8 +33,8 @@ static int test_mechanics_position_updates_velocity(void) {
   }
 
   const double deltaTime = 0.5;
-  if (!MechanicsPositionUpdate(universe, deltaTime)) {
-    fprintf(stderr, "MechanicsPositionUpdate returned false\n");
+  if (!MechanicsUpdate(universe, deltaTime)) {
+    fprintf(stderr, "MechanicsUpdate returned false\n");
     UniverseDestroy(universe);
     return 1;
   }

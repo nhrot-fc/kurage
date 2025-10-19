@@ -11,6 +11,7 @@ typedef enum {
   MASK_MECHANIC = 1 << 0,
   MASK_BODY = 1 << 1,
   MASK_PARTICLE = 1 << 2,
+  MASK_FIELD = 1 << 3,
 } KMask;
 
 /*
@@ -38,5 +39,13 @@ typedef struct {
 typedef struct {
   double radius;
 } KParticle;
+
+typedef KVector2 (*ForceFn)(const KVector2 origin_pos, double origin_mass,
+                            const KVector2 pos, double mass);
+
+typedef struct {
+  ForceFn apply;
+  double radiusInfluence;
+} KField;
 
 #endif /* ECS_COMPONENTS_H */

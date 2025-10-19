@@ -19,6 +19,65 @@ static Color color_for_speed(double speed) {
   return ColorFromHSV(hue, SPEED_COLOR_SATURATION, SPEED_COLOR_VALUE);
 }
 
+void RenderField(const Universe *universe) {
+  if (!universe) {
+    return;
+  }
+
+  int columns = GetScreenWidth() / 50;
+  int rows = GetScreenHeight() / 50;
+
+  for (int i = 0; i <= columns; i++) {
+    for (int j = 0; j <= rows; j++) {
+      KVector2 point = {(double)(i * 50), (double)(j * 50)};
+      KVector2 totalForce = {0.0, 0.0};
+
+      for (uint32_t e = 0; e < universe->maxEntities; e++) {
+        if (!universe->activeEntities[e] ||
+            !(universe->entityMasks[e] & MASK_FIELD))
+          continue;
+
+        const KField *field = &universe->fields[e];
+        const KMechanic *mechanic = &universe->mechanics[e];
+        const KBody *body = &universe->bodies[e];
+
+        KVector2 force =
+            field->apply(mechanic->pos, body->mass, point, 1.0 /* test mass */);
+
+        totalForce = KVector2Add(totalForce, force);
+      }
+
+      KVector2 forceUnit = KVector2Unit(totalForce);
+      double forceMagnitude = KVector2Norm(totalForce);
+      double normalizedForce = forceMagnitude / 50.0;
+      if (normalizedForce < 0.0)
+        normalizedForce = 0.0;
+      if (normalizedForce > 1.0)
+        normalizedForce = 1.0;
+
+      // Draw force vector
+      Vector2 start = {(float)point.x, (float)point.y};
+      Vector2 end = {
+          start.x + (float)(fmin(forceMagnitude, 15.0) * forceUnit.x),
+          start.y + (float)(fmin(forceMagnitude, 15.0) * forceUnit.y),
+      };
+
+      float thickness = 1.0 + (float)normalizedForce * (7.0 - 1.0);
+      float hue = 120.0 - normalizedForce * 120.0; // Green -> Red ramp.
+      Color forceColor = ColorFromHSV(hue, 0.85f, 0.9f);
+
+      DrawLineEx(start, end, thickness, ColorAlpha(forceColor, 0.7f));
+
+      Vector2 perp = {-forceUnit.y, forceUnit.x};
+      float perpScale = thickness * 1.5f;
+      Vector2 left = {end.x + perp.x * perpScale, end.y + perp.y * perpScale};
+      Vector2 right = {end.x - perp.x * perpScale, end.y - perp.y * perpScale};
+
+      DrawTriangle(end, left, right, forceColor);
+    }
+  }
+}
+
 void RenderUniverse(const Universe *universe) {
   if (!universe)
     return;
@@ -80,6 +139,8 @@ void RenderUniverse(const Universe *universe) {
       DrawLineEx(center, end, 2.0f, ColorAlpha(particleColor, 0.7f));
     }
   }
+
+  RenderField(universe);
 }
 
 void RenderUniverseGrid(const Universe *universe) {}

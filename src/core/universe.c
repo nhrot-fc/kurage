@@ -18,11 +18,12 @@ Universe *UniverseCreate(uint32_t maxEntities) {
   universe->mechanics = (KMechanic *)calloc(maxEntities, sizeof(KMechanic));
   universe->bodies = (KBody *)calloc(maxEntities, sizeof(KBody));
   universe->particles = (KParticle *)calloc(maxEntities, sizeof(KParticle));
+  universe->fields = (KField *)calloc(maxEntities, sizeof(KField));
   universe->freeEntityStack = (EntityID *)calloc(maxEntities, sizeof(EntityID));
 
   if (!universe->entityMasks || !universe->activeEntities ||
       !universe->mechanics || !universe->bodies || !universe->particles ||
-      !universe->freeEntityStack) {
+      !universe->fields || !universe->freeEntityStack) {
     UniverseDestroy(universe);
     return NULL;
   }
@@ -46,12 +47,14 @@ bool UniverseDestroy(Universe *universe) {
   free(universe->mechanics);
   free(universe->bodies);
   free(universe->particles);
+  free(universe->fields);
   free(universe->freeEntityStack);
   universe->entityMasks = NULL;
   universe->activeEntities = NULL;
   universe->mechanics = NULL;
   universe->bodies = NULL;
   universe->particles = NULL;
+  universe->fields = NULL;
   universe->freeEntityStack = NULL;
   free(universe);
   return true;
@@ -98,6 +101,7 @@ EntityID UniverseCreateEntity(Universe *universe) {
   universe->mechanics[newId] = (KMechanic){0};
   universe->bodies[newId] = (KBody){0};
   universe->particles[newId] = (KParticle){0};
+  universe->fields[newId] = (KField){0};
   return newId;
 }
 
@@ -111,6 +115,7 @@ bool UniverseDestroyEntity(Universe *universe, EntityID id) {
   universe->mechanics[id] = (KMechanic){0};
   universe->bodies[id] = (KBody){0};
   universe->particles[id] = (KParticle){0};
+  universe->fields[id] = (KField){0};
   universe->entityCount--;
   if (universe->freeEntityCount < universe->maxEntities) {
     universe->freeEntityStack[universe->freeEntityCount++] = id;
@@ -144,5 +149,6 @@ bool UniverseIsEntityActive(const Universe *universe, EntityID id) {
 DEFINE_COMPONENT_ACCESSORS(KMechanic, mechanics, MASK_MECHANIC, KMechanic)
 DEFINE_COMPONENT_ACCESSORS(KBody, bodies, MASK_BODY, KBody)
 DEFINE_COMPONENT_ACCESSORS(KParticle, particles, MASK_PARTICLE, KParticle)
+DEFINE_COMPONENT_ACCESSORS(KField, fields, MASK_FIELD, KField)
 
 #undef DEFINE_COMPONENT_ACCESSORS

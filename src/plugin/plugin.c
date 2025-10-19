@@ -18,6 +18,23 @@ static KurageState *state = NULL;
 
 // Static function declarations
 static void init_universe(void);
+static void rebind_field_functions(void);
+
+// Test Field function
+static KVector2 test_field_function(const KVector2 origin_pos,
+                                    double origin_mass, const KVector2 pos,
+                                    double mass) {
+  const double G = 1000.0; // Gravitational constant for field strength
+  KVector2 direction = KVector2Sub(origin_pos, pos);
+  double distance_sq = direction.x * direction.x + direction.y * direction.y;
+
+  if (distance_sq < 1e-6) {
+    return (KVector2){0.0, 0.0}; // Avoid singularity
+  }
+  double force_magnitude = (G * origin_mass * mass) / distance_sq;
+  KVector2 force = KVector2Scale(KVector2Unit(direction), force_magnitude);
+  return force;
+}
 
 void kurage_init(void) {
   printf("Initializing Kurage Physics Engine\n");
@@ -42,6 +59,8 @@ KurageState *kurage_pre_reload(void) {
 void kurage_post_reload(KurageState *preserved_state) {
   printf("Restoring state after hot reload...\n");
   state = preserved_state;
+  // Refresh preserved field callbacks to the newly loaded code.
+  rebind_field_functions();
 }
 
 void kurage_logic(void) {
@@ -181,7 +200,33 @@ static void init_universe(void) {
                              .invMass = (mass > 0.0) ? 1.0 / mass : 0.0,
                              .mass = mass,
                          });
+        if (i % 10 == 0) {
+          UniverseAddKField(state->universe, entity,
+                            (KField){
+                                .apply = test_field_function,
+                                .radiusInfluence = 150.0,
+                            });
+        }
       }
     }
+  }
+}
+
+static void rebind_field_functions(void) {
+  if (!state || !state->universe) {
+    return;
+  }
+
+  Universe *universe = state->universe;
+  for (uint32_t i = 0; i < universe->maxEntities; i++) {
+    if (!universe->activeEntities[i]) {
+      continue;
+    }
+
+    if (!(universe->entityMasks[i] & MASK_FIELD)) {
+      continue;
+    }
+
+    universe->fields[i].apply = test_field_function;
   }
 }

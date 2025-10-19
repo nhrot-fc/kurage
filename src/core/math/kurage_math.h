@@ -59,6 +59,7 @@ KVector2 KVector2Scale(KVector2 v, double scalar);
 double KVector2DotProduct(KVector2 v1, KVector2 v2);
 KVector2 KVector2Add(KVector2 v1, KVector2 v2);
 KVector2 KVector2Sub(KVector2 v1, KVector2 v2);
+KVector2 KVector2Zero();
 
 /**
  * Basic KVector3 operations
@@ -71,6 +72,7 @@ double KVector3DotProduct(KVector3 v1, KVector3 v2);
 KVector3 KVector3CrossProduct(KVector3 v1, KVector3 v2);
 KVector3 KVector3Add(KVector3 v1, KVector3 v2);
 KVector3 KVector3Sub(KVector3 v1, KVector3 v2);
+KVector3 KVector3Zero();
 
 /**
  * Basic KQuaternion operations

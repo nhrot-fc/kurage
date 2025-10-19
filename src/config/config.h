@@ -8,7 +8,7 @@
  */
 
 /* Entity/Simulation limits */
-#define MAX_OBJECTS 2000
+#define MAX_OBJECTS 100
 #define OBJECT_RADIUS 5
 
 /* Physics parameters */
