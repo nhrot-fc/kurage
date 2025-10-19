@@ -49,7 +49,7 @@ void RenderField(const Universe *universe) {
 
       KVector2 forceUnit = KVector2Unit(totalForce);
       double forceMagnitude = KVector2Norm(totalForce);
-      double normalizedForce = forceMagnitude / 50.0;
+      double normalizedForce = forceMagnitude / 1000.0;
       if (normalizedForce < 0.0)
         normalizedForce = 0.0;
       if (normalizedForce > 1.0)
@@ -58,8 +58,8 @@ void RenderField(const Universe *universe) {
       // Draw force vector
       Vector2 start = {(float)point.x, (float)point.y};
       Vector2 end = {
-          start.x + (float)(fmin(forceMagnitude, 15.0) * forceUnit.x),
-          start.y + (float)(fmin(forceMagnitude, 15.0) * forceUnit.y),
+          start.x + (float)(fmin(forceMagnitude, 20.0) * forceUnit.x),
+          start.y + (float)(fmin(forceMagnitude, 20.0) * forceUnit.y),
       };
 
       float thickness = 1.0 + (float)normalizedForce * (7.0 - 1.0);

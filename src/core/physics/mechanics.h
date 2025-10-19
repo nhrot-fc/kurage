@@ -13,4 +13,8 @@ bool MechanicsBoundaryCollisionUpdate(Universe *universe);
 bool MechanicsApplyForce(Universe *universe, EntityID id, KVector2 force);
 bool MechanicsUpdate(Universe *universe, double deltaTime);
 bool MechanicsCleanUp(Universe *universe);
+
+KVector2 GravitationalField(const KVector2 origin_pos, double origin_mass,
+                            const KVector2 pos, double mass);
+
 #endif /* PHYSICS_MECHANICS_H */
