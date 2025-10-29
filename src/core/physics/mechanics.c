@@ -6,7 +6,7 @@ bool MechanicsBoundaryCollisionUpdate(Universe *universe) {
     return false;
   }
 
-  if (!universe->boundary.enabled) {
+  if (!universe->boundaryEnabled) {
     return true;
   }
 
@@ -166,7 +166,7 @@ KVector2 GravitationalField(const KVector2 origin_pos, double origin_mass,
   KVector2 direction = KVector2Sub(origin_pos, pos);
   double distance_sq = direction.x * direction.x + direction.y * direction.y;
 
-  double min_distance = 6371 * 6371 * 1e6; // prevent singularity at Earth's radius
+  double min_distance = 1e3; // prevent singularity at Earth's radius
   double force_magnitude = (G * origin_mass * mass) / (distance_sq + min_distance);
   KVector2 force = KVector2Scale(KVector2Unit(direction), force_magnitude);
   return force;

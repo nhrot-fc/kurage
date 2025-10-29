@@ -82,7 +82,7 @@ void RenderUniverse(const Universe *universe) {
   if (!universe)
     return;
 
-  if (universe->boundary.enabled) {
+  if (universe->boundaryEnabled) {
     Color boundaryColor = ColorAlpha(WHITE, 0.8f);
     DrawRectangleLines(
         (int)universe->boundary.left, (int)universe->boundary.top,

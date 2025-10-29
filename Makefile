@@ -59,7 +59,7 @@ $(RAYLIB_LIB):
 		cd $(RAYLIB_SRC) && make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED; \
 	fi
 
-build: $(KURAGE_BIN) reload
+build: reload $(KURAGE_BIN)
 	@echo "build: done"
 
 # ----------------------

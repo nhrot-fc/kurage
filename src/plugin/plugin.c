@@ -65,16 +65,17 @@ void kurage_update(void) {
 
     if (currentWidth != lastWidth || currentHeight != lastHeight) {
       // Window resized, update boundaries
-      UniverseSetBoundary(
-          state->universe,
-          (UniverseBoundary){
-              .left = 0.0 + BOUNDARY_PADDING,
-              .right = (double)currentWidth - BOUNDARY_PADDING,
-              .top = 0.0 + BOUNDARY_PADDING,
-              .bottom = (double)currentHeight - BOUNDARY_PADDING,
-              .thickness = 1.0,
-              .enabled = true,
-          });
+      if (state->universe->boundaryEnabled) {
+        UniverseSetBoundary(
+            state->universe,
+            (UniverseBoundary){
+                .left = 0.0 + BOUNDARY_PADDING,
+                .right = (double)currentWidth - BOUNDARY_PADDING,
+                .top = 0.0 + BOUNDARY_PADDING,
+                .bottom = (double)currentHeight - BOUNDARY_PADDING,
+                .thickness = 1.0,
+            });
+      }
 
       // Update cached dimensions
       lastWidth = currentWidth;
@@ -136,8 +137,8 @@ static void init_universe(void) {
                             .top = 0.0 + BOUNDARY_PADDING,
                             .bottom = (double)windowHeight - BOUNDARY_PADDING,
                             .thickness = 1.0,
-                            .enabled = true,
                         });
+    //UniverseUnsetBoundary(state->universe);
 
     srand(time(NULL));
     const double left = state->universe->boundary.left;
@@ -158,16 +159,16 @@ static void init_universe(void) {
         y += ((double)rand() / (double)RAND_MAX) * height;
       }
 
-      double radius = 15.0; // + ((double)rand() / (double)RAND_MAX) * 10.0;
+      double radius = 4.0; // + ((double)rand() / (double)RAND_MAX) * 10.0;
       double density = 1.0;
-      double mass = M_PI * radius * radius * density;
-      if (i==0) {
-        // earth-like mass
-        mass = 5.972e24;
-      }
+      double mass = M_PI * radius * radius * density * 1e12;
+      // if (i == 0) {
+      //   // earth-like mass
+      //   mass = 5.972e20;
+      // }
       double vel_x = -10.0 + ((double)rand() / (double)RAND_MAX) * 20.0;
       double vel_y = -10.0 + ((double)rand() / (double)RAND_MAX) * 20.0;
-      KVector2 velocity = {vel_x, vel_y};
+      KVector2 velocity = (true) ? KVector2Zero() : (KVector2){vel_x, vel_y};
       KVector2 position = {x, y};
       EntityID entity = UniverseCreateEntity(state->universe);
       if (entity != INVALID_ENTITY) {
@@ -187,13 +188,11 @@ static void init_universe(void) {
                              .invMass = (mass > 0.0) ? 1.0 / mass : 0.0,
                              .mass = mass,
                          });
-        if (i == 0) {
-          UniverseAddKField(state->universe, entity,
-                            (KField){
-                                .apply = GravitationalField,
-                                .radiusInfluence = 150.0,
-                            });
-        }
+        UniverseAddKField(state->universe, entity,
+                          (KField){
+                              .apply = GravitationalField,
+                              .radiusInfluence = 150.0,
+                          });
       }
     }
   }

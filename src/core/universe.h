@@ -16,7 +16,6 @@ typedef struct {
   double top;
   double bottom;
   double thickness;
-  bool enabled;
 } UniverseBoundary;
 
 typedef struct {
@@ -32,6 +31,7 @@ typedef struct {
   KField *fields;
   EntityID *freeEntityStack;
   UniverseBoundary boundary;
+  bool boundaryEnabled;
 } Universe;
 
 Universe *UniverseCreate(uint32_t maxEntities);

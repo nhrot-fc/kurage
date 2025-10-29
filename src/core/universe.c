@@ -33,7 +33,7 @@ Universe *UniverseCreate(uint32_t maxEntities) {
     universe->activeEntities[i] = false;
   }
 
-  universe->boundary.enabled = false;
+  universe->boundaryEnabled = false;
 
   return universe;
 }
@@ -64,7 +64,7 @@ bool UniverseSetBoundary(Universe *universe, UniverseBoundary boundary) {
   if (universe == NULL) {
     return false;
   }
-  universe->boundary.enabled = true;
+  universe->boundaryEnabled = true;
   universe->boundary = boundary;
   return true;
 }
@@ -73,7 +73,7 @@ bool UniverseUnsetBoundary(Universe *universe) {
   if (universe == NULL) {
     return false;
   }
-  universe->boundary.enabled = false;
+  universe->boundaryEnabled = false;
   return true;
 }
 
